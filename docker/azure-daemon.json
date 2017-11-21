@@ -10,5 +10,6 @@
   "tlskey": "/etc/ssl/cf/server-key.pem",
   "metrics-addr" : "0.0.0.0:9323",
   "experimental" : true,
-  "mtu": 1450
+  "mtu": 1450,
+  "insecure-registries" : ["192.168.99.100:5000"]
 }

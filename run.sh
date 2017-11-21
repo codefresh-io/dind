@@ -23,6 +23,7 @@ fi
 # creating daemon json
 if [[ ! -f /etc/docker/daemon.json ]]; then
   DAEMON_JSON=${DAEMON_JSON:-default-daemon.json}
+  mkdir -p /etc/docker
   cp -v ${DIR}/docker/${DAEMON_JSON} /etc/docker/daemon.json
 fi
 echo "$(date) - Starting dockerd with /etc/docker/daemon.json: "
