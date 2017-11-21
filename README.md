@@ -1,1 +1,1 @@
-# Docker-in-Docker (dind) image with Codefresh for Codefresh
+# Docker-in-Docker (dind) image for Codefresh
