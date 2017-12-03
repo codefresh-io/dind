@@ -19,6 +19,8 @@ if [[ -n "${CODEFRESH_CLIENT_CA_DATA}" ]]; then
   echo ${CODEFRESH_CLIENT_CA_DATA} | base64 -d >> ${CODEFRESH_CLIENT_CA_FILE}
 fi
 
+# Starting monitor
+${DIR}/monitor/start.sh
 
 # creating daemon json
 if [[ ! -f /etc/docker/daemon.json ]]; then
