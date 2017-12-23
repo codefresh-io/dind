@@ -2,6 +2,17 @@
 
 DIR=$(dirname $0)
 
+sigterm_trap(){
+   echo "${1:-SIGTERM} received at $(date)"
+
+   echo "killing MONITOR_PID ${MONITOR_PID}"
+   kill $MONITOR_PID
+
+   echo "killing DOCKER_PID ${DOCKER_PID}"
+   kill $DOCKER_PID
+   sleep 2
+}
+
 # Adding cleaner
 if [[ -n "${DOCKER_CLEANER_CRON}" ]]; then
   echo "${DOCKER_CLEANER_CRON} $(realpath $(dirname $0)/docker-cleaner.sh) " | tee -a /etc/crontabs/root
@@ -20,7 +31,8 @@ if [[ -n "${CODEFRESH_CLIENT_CA_DATA}" ]]; then
 fi
 
 # Starting monitor
-${DIR}/monitor/start.sh
+${DIR}/monitor/start.sh  <&- &
+MONITOR_PID=$!
 
 # creating daemon json
 if [[ ! -f /etc/docker/daemon.json ]]; then
@@ -31,4 +43,6 @@ fi
 echo "$(date) - Starting dockerd with /etc/docker/daemon.json: "
 cat /etc/docker/daemon.json
 
-dockerd
+dockerd <&- &
+DOCKER_PID=$!
+wait ${DOCKER_PID}
