@@ -44,5 +44,13 @@ echo "$(date) - Starting dockerd with /etc/docker/daemon.json: "
 cat /etc/docker/daemon.json
 
 dockerd <&- &
-DOCKER_PID=$!
+while ! test -f /var/run/docker.pid || test -z "$(cat /var/run/docker.pid)"
+do
+  echo "$(date) - Waiting for docker to start"
+  sleep 2
+done
+
+DOCKER_PID=$(cat /var/run/docker.pid)
+echo "DOCKER_PID = ${DOCKER_PID} "
 wait ${DOCKER_PID}
+
