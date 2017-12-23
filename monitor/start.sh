@@ -13,6 +13,7 @@ sigterm_trap(){
    echo "killing METRICS_PID ${METRICS_PID}"
    kill $METRICS_PID
 }
+trap sigterm_trap SIGTERM SIGINT
 
 DIR=$(dirname $0)
 

@@ -12,6 +12,7 @@ sigterm_trap(){
    kill $DOCKER_PID
    sleep 2
 }
+trap sigterm_trap SIGTERM SIGINT
 
 # Adding cleaner
 if [[ -n "${DOCKER_CLEANER_CRON}" ]]; then
