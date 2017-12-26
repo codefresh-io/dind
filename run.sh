@@ -2,8 +2,27 @@
 
 DIR=$(dirname $0)
 
+echo "Entering $0 at $(date) "
+DIND_VOLUME_STAT_DIR=/var/lib/docker/dind-volume
+DIND_VOLUME_CREATED_TS=${DIND_VOLUME_STAT_DIR}/created
+DIND_VOLUME_LAST_USED_TS=${DIND_VOLUME_STAT_DIR}/last_used
+
+mkdir -p ${DIND_VOLUME_STAT_DIR}
+if [ -f ${DIND_VOLUME_STAT_DIR}/created ]; then
+  echo "This is first usage of the dind-volume"
+  date +%s > ${DIND_VOLUME_STAT_DIR}/created
+fi
+
+date +%%s > ${DIND_VOLUME_STAT_DIR}/last_used
+echo "$(hostname) $(date +%%s)" >> ${DIND_VOLUME_STAT_DIR}/pods
+
+
 sigterm_trap(){
    echo "${1:-SIGTERM} received at $(date)"
+   date +%%s > ${DIND_VOLUME_STAT_DIR}/last_used
+
+   echo "Starting Cleaner"
+   ${DIR}/clean-docker
 
    echo "killing MONITOR_PID ${MONITOR_PID}"
    kill $MONITOR_PID
@@ -14,11 +33,9 @@ sigterm_trap(){
 }
 trap sigterm_trap SIGTERM SIGINT
 
-# Adding cleaner
-if [[ -n "${DOCKER_CLEANER_CRON}" ]]; then
-  echo "${DOCKER_CLEANER_CRON} $(realpath $(dirname $0)/docker-cleaner.sh) " | tee -a /etc/crontabs/root
-  crond
-fi
+
+
+
 
 # Starting run daemon
 rm -fv /var/run/docker.pid
