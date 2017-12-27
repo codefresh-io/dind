@@ -3,23 +3,25 @@
 DIR=$(dirname $0)
 
 echo "Entering $0 at $(date) "
-DIND_VOLUME_STAT_DIR=/var/lib/docker/dind-volume
-DIND_VOLUME_CREATED_TS=${DIND_VOLUME_STAT_DIR}/created
-DIND_VOLUME_LAST_USED_TS=${DIND_VOLUME_STAT_DIR}/last_used
+DIND_VOLUME_STAT_DIR=${DIND_VOLUME_STAT_DIR:-/var/lib/docker/dind-volume}
+DIND_VOLUME_CREATED_TS_FILE=${DIND_VOLUME_STAT_DIR}/created
+DIND_VOLUME_LAST_USED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_used
+DIND_VOLUME_USED_BY_PODS_FILE=${DIND_VOLUME_STAT_DIR}/pods
 
 mkdir -p ${DIND_VOLUME_STAT_DIR}
 if [ -f ${DIND_VOLUME_STAT_DIR}/created ]; then
   echo "This is first usage of the dind-volume"
-  date +%s > ${DIND_VOLUME_STAT_DIR}/created
+  date +%s > ${DIND_VOLUME_CREATED_TS_FILE}
 fi
 
-date +%%s > ${DIND_VOLUME_STAT_DIR}/last_used
-echo "$(hostname) $(date +%%s)" >> ${DIND_VOLUME_STAT_DIR}/pods
+date +%s > ${DIND_VOLUME_LAST_USED_TS_FILE}
 
+export POD_NAME=${POD_NAME:-$(hostname)}
+echo "${POD_NAME} $(date +%s)" >> ${DIND_VOLUME_USED_BY_PODS_FILE}
 
 sigterm_trap(){
    echo "${1:-SIGTERM} received at $(date)"
-   date +%%s > ${DIND_VOLUME_STAT_DIR}/last_used
+   date +%s > ${DIND_VOLUME_STAT_DIR}/last_used
 
    echo "Starting Cleaner"
    ${DIR}/clean-docker
@@ -32,10 +34,6 @@ sigterm_trap(){
    sleep 2
 }
 trap sigterm_trap SIGTERM SIGINT
-
-
-
-
 
 # Starting run daemon
 rm -fv /var/run/docker.pid
