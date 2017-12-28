@@ -21,10 +21,21 @@ echo "${POD_NAME} $(date +%s)" >> ${DIND_VOLUME_USED_BY_PODS_FILE}
 
 sigterm_trap(){
    echo "${1:-SIGTERM} received at $(date)"
-   date +%s > ${DIND_VOLUME_STAT_DIR}/last_used
 
-   echo "Starting Cleaner"
-   ${DIR}/clean-docker
+   CURRENT_TS=$(date +%s)
+   echo ${CURRENT_TS} > ${DIND_VOLUME_STAT_DIR}/last_used
+
+    #### Saving Current Docker events
+    DOCKER_EVENTS_DIR=${DIND_VOLUME_STAT_DIR}/events
+    DOCKER_EVENTS_FILE="${DOCKER_EVENTS_DIR}"/${CURRENT_TS}
+    DOCKER_EVENTS_FORMAT='{{ json . }}'
+    echo -e "\nSaving current docker events to ${DOCKER_EVENTS_FILE} "
+    docker events --until 0s --format "${DOCKER_EVENTS_FORMAT}" > "${DOCKER_EVENTS_FILE}"
+
+   if [[ -n "${CLEAN_DOCKER}" ]]; then
+       echo "Starting Cleaner"
+       ${DIR}/clean-docker
+   fi
 
    echo "killing MONITOR_PID ${MONITOR_PID}"
    kill $MONITOR_PID

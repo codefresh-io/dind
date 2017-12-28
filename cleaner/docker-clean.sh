@@ -15,6 +15,7 @@ CLEAN_PERIOD_SECONDS=${CLEAN_PERIOD_SECONDS}
 CLEAN_PERIOD_BUILDS=${CLEAN_PERIOD_BUILDS}
 IMAGE_RETAIN_PERIOD=${IMAGE_RETAIN_PERIOD}
 VOLUMES_RETAIN_PERIOD=${VOLUMES_RETAIN_PERIOD}
+DRY_RUN=${DRY_RUN}
 "
 
 #### Defining DIND_VOLUME_STAT dir and stat files
@@ -29,12 +30,12 @@ DIND_VOLUME_USED_BY_PODS_FILE=${DIND_VOLUME_STAT_DIR}/pods
 POD_NAME=${POD_NAME:-$(hostname)}
 CURRENT_TS=$(date %+s)
 
-#### Saving Current Docker events
-DOCKER_EVENTS_DIR=${DIND_VOLUME_STAT_DIR}/dind-volume/events
-DOCKER_EVENTS_FILE="${DOCKER_EVENTS_DIR}"/${CURRENT_TS}
-DOCKER_EVENTS_FORMAT='{{ json . }}'
-echo -e "\nSaving current docker events to ${DOCKER_EVENTS_FILE} "
-docker events --until 0s --format "${DOCKER_EVENTS_FORMAT}" > "${DOCKER_EVENTS_FILE}"
+#### Current Docker events
+#DOCKER_EVENTS_DIR=${DIND_VOLUME_STAT_DIR}/events
+#DOCKER_EVENTS_FILE="${DOCKER_EVENTS_DIR}"/${CURRENT_TS}
+#DOCKER_EVENTS_FORMAT='{{ json . }}'
+#echo -e "\nSaving current docker events to ${DOCKER_EVENTS_FILE} "
+#docker events --until 0s --format "${DOCKER_EVENTS_FORMAT}" > "${DOCKER_EVENTS_FILE}"
 
 #### Checking if we need to clean by dind stat
 NEED_TO_CLEEN=""
@@ -78,7 +79,7 @@ if [[ -z "${NEED_TO_CLEEN}" ]]; then
   exit 0
 fi
 
-echo -e "\n####### NEED TO CLEAN Volume - statring"
+echo -e "\n####### NEED TO CLEAN Volume - starting"
 
 
 DIR=$(dirname $0)
@@ -93,16 +94,44 @@ display_df(){
 
 clean_containers(){
   echo -e "\n############# Cleaning Containers ############# - $(date) "
-  docker ps -aq | xargs -n1 docker rm -fv
+  if [[ -n "${DRY_RUN}" ]]; then
+     echo "Running in DRY_RUN, just display rm commands"
+     docker ps -aq | xargs -n1 echo docker rm -fv
+  else
+     docker ps -aq | xargs -n1 docker rm -fv
+  fi
+
 }
 
 clean_volumes(){
   echo -e "\n############# Cleaning Volumes ############# - $(date) "
+  # Listing directories in /var/lib/docker/volumes and delete volume if its folder mtime>VOLUMES_RETAIN_PERIOD
+  if [[ -n "${DRY_RUN}" ]]; then
+     echo "Running in DRY_RUN, just display rm commands"
+  fi
+  for ii in $(find "${DOCKER_VOLUME_DIR}/volumes" -mindepth 1 -maxdepth 1 -type d )
+  do
+     VOLUME_NAME=$(basename $ii)
+     VOLUME_TS=$(date -r ${ii} "+%s")
+     VOLUME_TS_AGO=$(( CURRENT_TS - VOLUME_TS ))
+     if [[ ${VOLUME_TS_AGO} -ge ${VOLUMES_RETAIN_PERIOD} ]]; then
+       echo "Cleaning volume ${VOLUME_NAME} ... "
+
+       if [[ -n "${DRY_RUN}" ]]; then
+          echo docker volume rm "${VOLUME_NAME}"
+       else
+          docker volume rm "${VOLUME_NAME}"
+       fi
+     fi
+  done
 }
 
 clean_images(){
   echo -e "\n############# Cleaning Images ############# - $(date) "
-  # docker ps -aq | xargs -n1 docker rm -fv
+  DOCKER_EVENTS_DIR=${DIND_VOLUME_STAT_DIR}/events
+
+  # cat events | jq -r 'if .Type == "image" then .id elif .Type == "container" then .from else ""  end' | sort -u
+
 }
 
 clean_containers
@@ -111,10 +140,9 @@ clean_volumes
 
 clean_images
 
-
 echo "---- Cleaning Completed !!! - writing data to LAST_CLEANED_TS_FILE="${LAST_CLEANED_TS_FILE}" and LAST_CLEANED_POD_FILE="${LAST_CLEANED_POD_FILE}
 echo ${CURRENT_TS} > "${LAST_CLEANED_TS_FILE}"
-echo echo ${POD_NAME} > "${LAST_CLEANED_POD_FILE}
+echo ${POD_NAME} > "${LAST_CLEANED_POD_FILE}
 
 
 
