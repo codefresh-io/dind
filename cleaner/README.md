@@ -31,8 +31,8 @@ To determine what to delete we will use information stored in /var/lib/docker/di
 - Start Cleaning
   * concatenate event files newer than greatest from IMAGE_RETAIN_PERIOD and VOLUMES_RETAIN_PERIOD
   * clean all running and exiting containers by `docker rm -vf`
+  * clean all volumes which do not have events since VOLUMES_RETAIN_PERIOD  
   * clean all images which do not have events since IMAGE_RETAIN_PERIOD
-  * clean all volumes which do not have events since VOLUMES_RETAIN_PERIOD
   
 - write last_cleaned_timestamp to current filestamp
 
