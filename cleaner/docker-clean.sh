@@ -10,12 +10,13 @@ CLEAN_PERIOD_BUILDS=${CLEAN_PERIOD_BUILDS:-10}
 
 IMAGE_RETAIN_PERIOD=${IMAGE_RETAIN_PERIOD:-259200}
 VOLUMES_RETAIN_PERIOD=${VOLUMES_RETAIN_PERIOD:-259200}
+CLEANER_DRY_RUN=0
 echo "
 CLEAN_PERIOD_SECONDS=${CLEAN_PERIOD_SECONDS}
 CLEAN_PERIOD_BUILDS=${CLEAN_PERIOD_BUILDS}
 IMAGE_RETAIN_PERIOD=${IMAGE_RETAIN_PERIOD}
 VOLUMES_RETAIN_PERIOD=${VOLUMES_RETAIN_PERIOD}
-DRY_RUN=${DRY_RUN}
+CLEANER_DRY_RUN=${CLEANER_DRY_RUN}
 "
 
 #### Defining DIND_VOLUME_STAT dir and stat files
@@ -94,7 +95,7 @@ display_df(){
 
 clean_containers(){
   echo -e "\n############# Cleaning Containers ############# - $(date) "
-  if [[ -n "${DRY_RUN}" ]]; then
+  if [[ -n "${CLEANER_DRY_RUN}" ]]; then
      echo "Running in DRY_RUN, just display rm commands"
      docker ps -aq | xargs -n1 echo docker rm -fv
   else
@@ -106,7 +107,7 @@ clean_containers(){
 clean_volumes(){
   echo -e "\n############# Cleaning Volumes ############# - $(date) "
   # Listing directories in /var/lib/docker/volumes and delete volume if its folder mtime>VOLUMES_RETAIN_PERIOD
-  if [[ -n "${DRY_RUN}" ]]; then
+  if [[ -n "${CLEANER_DRY_RUN}" ]]; then
      echo "Running in DRY_RUN, just display rm commands"
   fi
   for ii in $(find "${DOCKER_VOLUME_DIR}/volumes" -mindepth 1 -maxdepth 1 -type d )
@@ -117,7 +118,7 @@ clean_volumes(){
      if [[ ${VOLUME_TS_AGO} -ge ${VOLUMES_RETAIN_PERIOD} ]]; then
        echo "Cleaning volume ${VOLUME_NAME} ... "
 
-       if [[ -n "${DRY_RUN}" ]]; then
+       if [[ -n "${CLEANER_DRY_RUN}" ]]; then
           echo docker volume rm "${VOLUME_NAME}"
        else
           docker volume rm "${VOLUME_NAME}"
@@ -133,7 +134,7 @@ clean_images(){
   #    docker image inspect --format '{{ .ID }}' "${image_name}" | sed  -E 's/^sha256:(.*)/\1/'
   # Finding descendand (child) docker images using docker_descendants.py script
 
-  if [[ -n "${DRY_RUN}" ]]; then
+  if [[ -n "${CLEANER_DRY_RUN}" ]]; then
      echo "Running in DRY_RUN, just display rm commands"
   fi
   DOCKER_EVENTS_DIR=${DIND_VOLUME_STAT_DIR}/events
@@ -141,19 +142,19 @@ clean_images(){
   rm -f ${RETAINED_IMAGES_FILE} ${RETAINED_IMAGES_FILE}.names
 
   echo "Finding recently used images by saved events within IMAGE_RETAIN_PERIOD=${IMAGE_RETAIN_PERIOD}s"
-  for ii in $(find "${DOCKER_EVENTS_DIR}/" -mindepth 1 -maxdepth 1 -type d )
+  for ii in $(find "${DOCKER_EVENTS_DIR}/" -mindepth 1 -maxdepth 1 -type f )
   do
      EVENTS_FILE_TS=$(basename $ii)
      EVENTS_FILE_TS_AGO=$(( CURRENT_TS - EVENTS_FILE_TS ))
      if [[ ${EVENTS_FILE_TS_AGO} -le ${IMAGE_RETAIN_PERIOD} ]]; then
        echo "    Finding images from event file $ii and writing names to ${RETAINED_IMAGES_FILE}.names"
-       cat events | jq -r 'if .Type == "image" then .id elif .Type == "container" then .Actor["Attributes"]["imageID"] + "\n" + .Actor["Attributes"]["image"] else ""  end' \
+       cat ${ii} | jq -r 'if .Type == "image" then .id elif .Type == "container" then .Actor["Attributes"]["imageID"] + "\n" + .Actor["Attributes"]["image"] else ""  end' \
        | sort -u >> ${RETAINED_IMAGES_FILE}.names
      fi
   done
 
   if [[ -f ${RETAINED_IMAGES_FILE}.names ]]; then
-     echo "    For all lines in ${RETAINED_IMAGES_FILE}.names we find its ID and write to ${RETAINED_IMAGES_FILE}"\
+     echo "    For all lines in ${RETAINED_IMAGES_FILE}.names we find its ID and write to ${RETAINED_IMAGES_FILE}"
      cat ${RETAINED_IMAGES_FILE}.names | while read image_name
      do
        if [[ -n "${image_name}" ]]; then
@@ -168,7 +169,7 @@ clean_images(){
 
   cat "${IMAGES_LIST_FILE}" | while read image_to_delete
   do
-    echo "Checking image ${image_to_delete} for deletion: "
+    echo -e "\n ---- Checking image ${image_to_delete} for deletion: "
     IMAGES_WITH_CHILDS_FILE=/tmp/image_to_delete_${image_to_delete}
     echo ${image_to_delete} > ${IMAGES_WITH_CHILDS_FILE}
 
@@ -186,7 +187,7 @@ clean_images(){
          echo "    Image ${image} should be retained - appears in RETAINED_IMAGES_FILE"
          break
       fi
-      if [[ -n "${DRY_RUN}" ]]; then
+      if [[ -n "${CLEANER_DRY_RUN}" ]]; then
          echo docker rmi ${image}
       else
          docker rmi ${image}
