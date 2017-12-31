@@ -205,8 +205,10 @@ clean_volumes
 clean_images
 
 echo "---- Cleaning Completed !!! - writing data to LAST_CLEANED_TS_FILE="${LAST_CLEANED_TS_FILE}" and LAST_CLEANED_POD_FILE="${LAST_CLEANED_POD_FILE}
-echo ${CURRENT_TS} > "${LAST_CLEANED_TS_FILE}"
-echo ${POD_NAME} > "${LAST_CLEANED_POD_FILE}"
+if [[ -z "${CLEANER_DRY_RUN}" ]]; then
+    echo ${CURRENT_TS} > "${LAST_CLEANED_TS_FILE}"
+    echo ${POD_NAME} > "${LAST_CLEANED_POD_FILE}"
+fi
 
 display_df
 
