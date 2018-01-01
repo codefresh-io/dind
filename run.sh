@@ -45,6 +45,12 @@ sigterm_trap(){
    echo "killing DOCKER_PID ${DOCKER_PID}"
    kill $DOCKER_PID
    sleep 2
+
+   if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" ]]; then
+     echo "We used DIND_IMAGES_LIB directory, removing it"
+     DOCKERD_DATA_ROOT=/opt/codefresh/dind/${POD_NAME}
+     rm -rf ${DOCKERD_DATA_ROOT}
+   fi
 }
 trap sigterm_trap SIGTERM SIGINT
 
@@ -72,7 +78,21 @@ fi
 echo "$(date) - Starting dockerd with /etc/docker/daemon.json: "
 cat /etc/docker/daemon.json
 
-dockerd <&- &
+DOCKERD_PARAMS=""
+if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" ]]; then
+
+   DIND_IMAGES_LIB_DIR=${DIND_IMAGES_LIB_DIR:-"/opt/codefresh/dind/images-lib"}
+   DOCKERD_DATA_ROOT=/opt/codefresh/dind/${POD_NAME}
+   # looking for first available
+   for ii in $(find ${DIND_IMAGES_LIB_DIR} -type d -regexp "lib-\d{1,3}")
+   do
+     mv $ii ${DOCKERD_DATA_ROOT} && \
+     DOCKERD_PARAMS="--data-root ${DOCKERD_DATA_ROOT}" && \
+     break
+   done
+fi
+
+dockerd ${DOCKERD_PARAMS} <&- &
 while ! test -f /var/run/docker.pid || test -z "$(cat /var/run/docker.pid)"
 do
   echo "$(date) - Waiting for docker to start"
