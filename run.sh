@@ -87,8 +87,9 @@ if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" ]]; the
    # looking for first available
    for ii in $(find ${DIND_IMAGES_LIB_DIR} -mindepth 1 -maxdepth 1 -type d | grep -E 'lib-[[:digit:]]{1,3}$')
    do
-     echo "Trying to use image-lib-dir $ii ... " & \
-     mv $ii ${DOCKERD_DATA_ROOT} && \
+     echo "Trying to use image-lib-dir $ii ... "
+     [[ -d "${DOCKERD_DATA_ROOT}" ]] && rm -rf "${DOCKERD_DATA_ROOT}"
+     mv $ii "${DOCKERD_DATA_ROOT}" && \
      DOCKERD_PARAMS="--data-root ${DOCKERD_DATA_ROOT}" && \
      echo "Successfully moved ${ii} to ${DOCKERD_DATA_ROOT} " && \
      break
