@@ -8,6 +8,8 @@ DIND_VOLUME_CREATED_TS_FILE=${DIND_VOLUME_STAT_DIR}/created
 DIND_VOLUME_LAST_USED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_used
 DIND_VOLUME_USED_BY_PODS_FILE=${DIND_VOLUME_STAT_DIR}/pods
 
+DIND_IMAGES_LIB_DIR=${DIND_IMAGES_LIB_DIR:-"/opt/codefresh/dind/images-libs"}
+
 mkdir -p ${DIND_VOLUME_STAT_DIR}
 if [ -f ${DIND_VOLUME_STAT_DIR}/created ]; then
   echo "This is first usage of the dind-volume"
@@ -46,9 +48,8 @@ sigterm_trap(){
    kill $DOCKER_PID
    sleep 2
 
-   if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" ]]; then
-     echo "We used DIND_IMAGES_LIB directory, removing it"
-     DOCKERD_DATA_ROOT=/opt/codefresh/dind/${POD_NAME}
+   if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" && -n "${DOCKERD_DATA_ROOT}" ]]; then
+     echo "We used DIND_IMAGES_LIB directory, removing DOCKERD_DATA_ROOT = ${DOCKERD_DATA_ROOT}"
      rm -rf ${DOCKERD_DATA_ROOT}
    fi
 }
@@ -80,20 +81,24 @@ cat /etc/docker/daemon.json
 
 DOCKERD_PARAMS=""
 if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" ]]; then
-
-   DIND_IMAGES_LIB_DIR=${DIND_IMAGES_LIB_DIR:-"/opt/codefresh/dind/images-lib"}
-   DOCKERD_DATA_ROOT=/opt/codefresh/dind/${POD_NAME}
+   mkdir -p ${DIND_IMAGES_LIB_DIR}/../pods
+   DOCKERD_DATA_ROOT=$(realpath ${DIND_IMAGES_LIB_DIR}/..)/pods/${POD_NAME}
+   echo "USE_DIND_IMAGES_LIB is set - using --data-root ${DOCKERD_DATA_ROOT} "
    # looking for first available
-   for ii in $(find ${DIND_IMAGES_LIB_DIR} -type d -regexp "lib-\d{1,3}")
+   for ii in $(find ${DIND_IMAGES_LIB_DIR} -mindepth 1 -maxdepth 1 -type d | grep -E 'lib-[[:digit:]]{1,3}$')
    do
+     echo "Trying to use image-lib-dir $ii ... " & \
      mv $ii ${DOCKERD_DATA_ROOT} && \
      DOCKERD_PARAMS="--data-root ${DOCKERD_DATA_ROOT}" && \
+     echo "Successfully moved ${ii} to ${DOCKERD_DATA_ROOT} " && \
      break
    done
 fi
 
+### Trying to start docker
 dockerd ${DOCKERD_PARAMS} <&- &
-while ! test -f /var/run/docker.pid || test -z "$(cat /var/run/docker.pid)"
+CNT=0
+while ! test -f /var/run/docker.pid || test -z "$(cat /var/run/docker.pid)" || ! docker ps
 do
   echo "$(date) - Waiting for docker to start"
   sleep 2
