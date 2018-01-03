@@ -50,8 +50,12 @@ sigterm_trap(){
 
    if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" && -n "${DOCKERD_DATA_ROOT}" ]]; then
      echo "We used DIND_IMAGES_LIB directory, removing DOCKERD_DATA_ROOT = ${DOCKERD_DATA_ROOT}"
-     rm -rf ${DOCKERD_DATA_ROOT}
+     time rm -rf ${DOCKERD_DATA_ROOT}
    fi
+
+   echo "Running processes: "
+   ps -ef
+   echo "Exiting at $(date) "
 }
 trap sigterm_trap SIGTERM SIGINT
 
