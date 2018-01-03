@@ -6,14 +6,14 @@ METRIC_FILE=${METRICS_DIR}/dind_metrics.prom
 METRIC_FILE_TMP=${METRIC_FILE}.$$
 
 COLLECT_INTERVAL=15
-DOCKER_VOLUME_DIR=${DOCKER_VOLUME_DIR:-/var/lib/docker}
+DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/var/lib/docker}
 echo "Started $0 at $(date)
 METRIC_FILE=${METRIC_FILE}
-DOCKER_VOLUME_DIR=${DOCKER_VOLUME_DIR}
+DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT}
 COLLECT_INTERVAL=${COLLECT_INTERVAL}
 "
 
-LABELS="dind_name=\"$(hostname)\",volume_path=\"${DOCKER_VOLUME_DIR}\""
+LABELS="dind_name=\"$(hostname)\",data_root_path=\"${DOCKERD_DATA_ROOT}\""
 echo "COMMON_LABELS=${LABELS}"
 
 DOCKER_PS_OUT_FILE=/tmp/docker-ps.out
@@ -35,8 +35,8 @@ while true; do
       DOCKER_CONTAINERS_COUNT=0
     fi
 
-    df ${DF_OPTS} ${DOCKER_VOLUME_DIR} > ${DF_OUT_FILE}
-    df -i ${DOCKER_VOLUME_DIR} > ${DF_INODES_OUT_FILE}
+    df ${DF_OPTS} ${DOCKERD_DATA_ROOT} > ${DF_OUT_FILE}
+    df -i ${DOCKERD_DATA_ROOT} > ${DF_INODES_OUT_FILE}
 
     DOCKER_VOLUME_KB_TOTAL=$(cat ${DF_OUT_FILE} | awk 'NR==2 {print $2}')
     DOCKER_VOLUME_KB_AVAILABLE=$(cat ${DF_OUT_FILE} | awk 'NR==2 {print $4}')

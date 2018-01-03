@@ -66,10 +66,6 @@ if [[ -n "${CODEFRESH_CLIENT_CA_DATA}" ]]; then
   echo ${CODEFRESH_CLIENT_CA_DATA} | base64 -d >> ${CODEFRESH_CLIENT_CA_FILE}
 fi
 
-# Starting monitor
-${DIR}/monitor/start.sh  <&- &
-MONITOR_PID=$!
-
 # creating daemon json
 if [[ ! -f /etc/docker/daemon.json ]]; then
   DAEMON_JSON=${DAEMON_JSON:-default-daemon.json}
@@ -82,7 +78,7 @@ cat /etc/docker/daemon.json
 DOCKERD_PARAMS=""
 if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" ]]; then
    mkdir -p ${DIND_IMAGES_LIB_DIR}/../pods
-   DOCKERD_DATA_ROOT=$(realpath ${DIND_IMAGES_LIB_DIR}/..)/pods/${POD_NAME}
+   export DOCKERD_DATA_ROOT=$(realpath ${DIND_IMAGES_LIB_DIR}/..)/pods/${POD_NAME}
    echo "USE_DIND_IMAGES_LIB is set - using --data-root ${DOCKERD_DATA_ROOT} "
    # looking for first available
    for ii in $(find ${DIND_IMAGES_LIB_DIR} -mindepth 1 -maxdepth 1 -type d | grep -E 'lib-[[:digit:]]{1,3}$')
@@ -95,6 +91,10 @@ if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" ]]; the
      break
    done
 fi
+
+# Starting monitor
+${DIR}/monitor/start.sh  <&- &
+MONITOR_PID=$!
 
 ### Trying to start docker
 dockerd ${DOCKERD_PARAMS} <&- &
