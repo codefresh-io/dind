@@ -188,9 +188,9 @@ clean_images(){
          break
       fi
       if [[ -n "${CLEANER_DRY_RUN}" ]]; then
-         echo docker rmi ${image}
+         echo docker rmi -f ${image}
       else
-         docker rmi ${image}
+         docker rmi -f ${image}
       fi
     done
   done
