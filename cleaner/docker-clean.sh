@@ -97,9 +97,9 @@ clean_containers(){
   echo -e "\n############# Cleaning Containers ############# - $(date) "
   if [[ -n "${CLEANER_DRY_RUN}" ]]; then
      echo "Running in DRY_RUN, just display rm commands"
-     docker ps -aq | xargs -n1 echo docker rm -fv
+     docker ps -aq | xargs -n1 echo docker rm -f
   else
-     docker ps -aq | xargs -n1 docker rm -fv
+     docker ps -aq | xargs -n1 docker rm -f
   fi
 
 }
