@@ -7,6 +7,13 @@ METRIC_FILE_TMP=${METRIC_FILE}.$$
 
 COLLECT_INTERVAL=15
 DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/var/lib/docker}
+
+DIND_VOLUME_STAT_DIR=${DIND_VOLUME_STAT_DIR:-${DOCKERD_DATA_ROOT}/dind-volume}
+mkdir -p ${DIND_VOLUME_STAT_DIR}
+
+LAST_CLEANED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_cleaned_ts
+LAST_PRUNED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_pruned_ts
+
 echo "Started $0 at $(date)
 METRIC_FILE=${METRIC_FILE}
 DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT}
@@ -81,6 +88,27 @@ docker_volume_inodes_usage{$LABELS} ${DOCKER_VOLUME_INODES_USAGE}
 
 EOF
 
-   mv ${METRIC_FILE_TMP} ${METRIC_FILE}
-   sleep $COLLECT_INTERVAL
+  ## Metrics for last cleaned and last_pruned ts
+  if [[ -f ${LAST_CLEANED_TS_FILE} ]]; then
+     DOCKER_VOLUME_LAST_CLEANED_TS=$(cat ${LAST_CLEANED_TS_FILE})
+     cat <<EOF >> $METRIC_FILE_TMP
+# TYPE docker_volume_last_cleaned_ts gauge
+# HELP docker_volume_last_cleaned_ts volume last cleaned by docker-clean.sh timestamp
+docker_volume_last_cleaned_ts{$LABELS} ${DOCKER_VOLUME_LAST_CLEANED_TS}
+
+EOF
+  fi
+
+  if [[ -f ${LAST_PRUNED_TS_FILE} ]]; then
+     DOCKER_VOLUME_LAST_PRUNED_TS=$(cat ${LAST_PRUNED_TS_FILE})
+     cat <<EOF >> $METRIC_FILE_TMP
+# TYPE docker_volume_last_pruned_ts gauge
+# HELP docker_volume_last_pruned_ts volume last pruned by docker-clean.sh timestamp
+docker_volume_last_pruned_ts{$LABELS} ${DOCKER_VOLUME_LAST_PRUNED_TS}
+
+EOF
+  fi  
+  
+  mv ${METRIC_FILE_TMP} ${METRIC_FILE}
+  sleep $COLLECT_INTERVAL
 done

@@ -10,6 +10,10 @@ CLEAN_PERIOD_BUILDS=${CLEAN_PERIOD_BUILDS:-10}
 
 IMAGE_RETAIN_PERIOD=${IMAGE_RETAIN_PERIOD:-259200}
 VOLUMES_RETAIN_PERIOD=${VOLUMES_RETAIN_PERIOD:-259200}
+
+DISK_USAGE_THRESHOLD=${DISK_USAGE_THRESHOLD:-0.8}
+INODES_USAGE_THRESHOLD=${INODES_USAGE_THRESHOLD:-0.8}
+
 #CLEANER_DRY_RUN=1
 echo "
 CLEAN_PERIOD_SECONDS=${CLEAN_PERIOD_SECONDS}
@@ -17,11 +21,13 @@ CLEAN_PERIOD_BUILDS=${CLEAN_PERIOD_BUILDS}
 IMAGE_RETAIN_PERIOD=${IMAGE_RETAIN_PERIOD}
 VOLUMES_RETAIN_PERIOD=${VOLUMES_RETAIN_PERIOD}
 CLEANER_DRY_RUN=${CLEANER_DRY_RUN}
+DISK_USAGE_THRESHOLD=${DISK_USAGE_THRESHOLD}
+INODES_USAGE_THRESHOLD=${INODES_USAGE_THRESHOLD}
 "
 
 #### Defining DIND_VOLUME_STAT dir and stat files
-DOCKER_VOLUME_DIR=${DOCKER_VOLUME_DIR:-/var/lib/docker}
-DIND_VOLUME_STAT_DIR=${DIND_VOLUME_STAT_DIR:-${DOCKER_VOLUME_DIR}/dind-volume}
+DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/var/lib/docker}
+DIND_VOLUME_STAT_DIR=${DIND_VOLUME_STAT_DIR:-${DOCKERD_DATA_ROOT}/dind-volume}
 mkdir -p ${DIND_VOLUME_STAT_DIR}
 
 LAST_CLEANED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_cleaned_ts
@@ -37,6 +43,17 @@ CURRENT_TS=$(date +%s)
 #DOCKER_EVENTS_FORMAT='{{ json . }}'
 #echo -e "\nSaving current docker events to ${DOCKER_EVENTS_FILE} "
 #docker events --until 0s --format "${DOCKER_EVENTS_FORMAT}" > "${DOCKER_EVENTS_FILE}"
+
+DIR=$(dirname $0)
+display_df(){
+  echo -e "\nCurrent disk space usage of $DOCKERD_DATA_ROOT at $(date) is: "
+  df ${DOCKERD_DATA_ROOT}
+
+  echo -e"\nCurrent inode usage of $DOCKERD_DATA_ROOT at $(date)  is: "
+  df -i ${DOCKERD_DATA_ROOT}
+  echo "---------------------"
+}
+display_df
 
 #### Checking if we need to clean by dind stat
 NEED_TO_CLEEN=""
@@ -75,23 +92,36 @@ else
   fi
 fi
 
+
+check_disk_usage_threshold(){
+   df ${DOCKERD_DATA_ROOT} | awk -v T=${DISK_USAGE_THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
+}
+
+check_inodes_usage_threshold(){
+   df -i ${DOCKERD_DATA_ROOT} | awk -v T=${INODES_USAGE_THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
+}
+
+echo -e "\nChecking if  need to clean by current disk usage - DISK_USAGE_THRESHOLD = ${DISK_USAGE_THRESHOLD}"
+IS_DISK_USAGE_THRESHOLD=$(check_disk_usage_threshold)
+if [[ ${IS_DISK_USAGE_THRESHOLD} == 1 ]]; then
+   echo "NEED TO CLEAN: Volume ${DOCKERD_DATA_ROOT} disk usage thershold ${DISK_USAGE_THRESHOLD} reached"
+   NEED_TO_CLEEN=1
+fi
+
+IS_INODES_USAGE_THRESHOLD=$(check_inodes_usage_threshold)
+if [[ ${IS_INODES_USAGE_THRESHOLD} == 1 ]]; then
+   echo "NEED TO CLEAN: Volume ${DOCKERD_DATA_ROOT} inodes usage thershold ${INODES_USAGE_THRESHOLD} reached"
+   NEED_TO_CLEEN=1
+fi
+
 if [[ -z "${NEED_TO_CLEEN}" ]]; then
   echo "NO need to clean, EXITING: it is new volume or it was cleaned less than ${CLEAN_PERIOD_SECONDS} ago it was cleaned less than ${CLEAN_PERIOD_BUILDS} build ago "
+  display_df
   exit 0
 fi
 
 echo -e "\n####### NEED TO CLEAN Volume - starting"
 
-
-DIR=$(dirname $0)
-display_df(){
-  echo -e "\nCurrent disk space usage of $DOCKER_VOLUME_DIR at $(date) is: "
-  df ${DOCKER_VOLUME_DIR}
-
-  echo -e"\nCurrent inode usage of $DOCKER_VOLUME_DIR at $(date)  is: "
-  df -i ${DOCKER_VOLUME_DIR}
-  echo "---------------------"
-}
 
 clean_containers(){
   echo -e "\n############# Cleaning Containers ############# - $(date) "
@@ -110,20 +140,39 @@ clean_volumes(){
   if [[ -n "${CLEANER_DRY_RUN}" ]]; then
      echo "Running in DRY_RUN, just display rm commands"
   fi
-  for ii in $(find "${DOCKER_VOLUME_DIR}/volumes" -mindepth 1 -maxdepth 1 -type d )
-  do
-     VOLUME_NAME=$(basename $ii)
-     VOLUME_TS=$(date -r ${ii} "+%s")
-     VOLUME_TS_AGO=$(( CURRENT_TS - VOLUME_TS ))
-     if [[ ${VOLUME_TS_AGO} -ge ${VOLUMES_RETAIN_PERIOD} ]]; then
-       echo "Cleaning volume ${VOLUME_NAME} ... "
 
-       if [[ -n "${CLEANER_DRY_RUN}" ]]; then
-          echo docker volume rm "${VOLUME_NAME}"
-       else
-          docker volume rm "${VOLUME_NAME}"
-       fi
-     fi
+  DOCKER_EVENTS_DIR=${DIND_VOLUME_STAT_DIR}/events
+  RETAINED_VOLUMES_FILE=/tmp/retained_volumes.$$
+  rm -f ${RETAINED_VOLUMES_FILE}
+
+  echo "Finding recently used volumes by saved events within VOLUMES_RETAIN_PERIOD= ${VOLUMES_RETAIN_PERIOD}s"
+  for ii in $(find "${DOCKER_EVENTS_DIR}/" -mindepth 1 -maxdepth 1 -type f )
+  do
+    EVENTS_FILE_TS=$(basename $ii)
+    EVENTS_FILE_TS_AGO=$(( CURRENT_TS - EVENTS_FILE_TS ))
+    if [[ ${EVENTS_FILE_TS_AGO} -le ${VOLUMES_RETAIN_PERIOD} ]]; then
+      echo "    Finding volumes from event file $ii and writing names to ${RETAINED_VOLUMES_FILE}"
+      cat ${ii} | jq -r 'if .Type == "volume" then .Actor["ID"] else "" end' \
+         | sort -u >> ${RETAINED_VOLUMES_FILE}
+    fi
+  done
+
+  for ii in $(find "${DOCKERD_DATA_ROOT}/volumes" -mindepth 1 -maxdepth 1 -type d )
+  do
+    VOLUME_NAME=$(basename $ii)
+
+    echo "    Checking volume ${VOLUME_NAME} for deletion"
+    if grep -q ${VOLUME_NAME} ${RETAINED_VOLUMES_FILE}; then
+        echo "    Volume ${VOLUME_NAME} should be retained - appears in RETAINED_VOLUMES_FILE"
+        break
+    fi
+
+    echo "Cleaning volume ${VOLUME_NAME} ... "
+    if [[ -n "${CLEANER_DRY_RUN}" ]]; then
+      echo docker volume rm "${VOLUME_NAME}"
+    else
+      docker volume rm "${VOLUME_NAME}"
+    fi
   done
 }
 
@@ -196,8 +245,6 @@ clean_images(){
   done
 }
 
-display_df
-
 clean_containers
 
 clean_volumes
@@ -212,9 +259,39 @@ fi
 
 display_df
 
+# Checking if need to prune
+NEED_TO_PRUNE=""
+echo -e "\nChecking if need to prune if after cleaning current disk usage - DISK_USAGE_THRESHOLD = ${DISK_USAGE_THRESHOLD}"
+IS_DISK_USAGE_THRESHOLD=$(check_disk_usage_threshold)
+if [[ ${IS_DISK_USAGE_THRESHOLD} == 1 ]]; then
+   echo "NEED TO PRUNE: Volume ${DOCKERD_DATA_ROOT} after cleaning disk usage thershold ${DISK_USAGE_THRESHOLD} reached"
+   NEED_TO_PRUNE=1
+fi
 
+IS_INODES_USAGE_THRESHOLD=$(check_inodes_usage_threshold)
+if [[ ${IS_INODES_USAGE_THRESHOLD} == 1 ]]; then
+   echo "NEED TO PRUNE: Volume ${DOCKERD_DATA_ROOT} after cleaner inodes usage thershold ${INODES_USAGE_THRESHOLD} reached"
+   NEED_TO_PRUNE=1
+fi
 
-
+if [[ -z "${NEED_TO_PRUNE}" ]]; then
+  echo "NO need to prune "
+  exit 0
+else
+  echo "executing docker system prune -a --volumes --force"
+  if [[ -n "${CLEANER_DRY_RUN}" ]]; then
+    echo "Dry run mode - do not actually prune"
+  else
+    LAST_PRUNED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_pruned_ts
+    LAST_PRUNED_POD_FILE=${DIND_VOLUME_STAT_DIR}/last_pruned_pod
+    docker system prune -a --volumes --force
+    
+    display_df
+    echo "---- Pruning Completed !!! - writing data to LAST_PRUNED_TS_FILE="${LAST_PRUNED_TS_FILE}" and LAST_PRUNED_POD_FILE="${LAST_PRUNED_POD_FILE}
+    echo $(date +%s) > "${LAST_PRUNED_TS_FILE}"
+    echo ${POD_NAME} > "${LAST_PRUNED_POD_FILE}"
+  fi
+fi
 
 
 

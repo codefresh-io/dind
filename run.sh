@@ -11,7 +11,7 @@ DIND_VOLUME_USED_BY_PODS_FILE=${DIND_VOLUME_STAT_DIR}/pods
 DIND_IMAGES_LIB_DIR=${DIND_IMAGES_LIB_DIR:-"/opt/codefresh/dind/images-libs"}
 
 mkdir -p ${DIND_VOLUME_STAT_DIR}
-if [ -f ${DIND_VOLUME_STAT_DIR}/created ]; then
+if [ ! -f ${DIND_VOLUME_STAT_DIR}/created ]; then
   echo "This is first usage of the dind-volume"
   date +%s > ${DIND_VOLUME_CREATED_TS_FILE}
 fi
