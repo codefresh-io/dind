@@ -108,6 +108,7 @@ if [[ ${IS_DISK_USAGE_THRESHOLD} == 1 ]]; then
    NEED_TO_CLEEN=1
 fi
 
+echo -e "\nChecking if  need to clean by current inodes usage - INODE_USAGE_THRESHOLD = ${INODES_USAGE_THRESHOLD}"
 IS_INODES_USAGE_THRESHOLD=$(check_inodes_usage_threshold)
 if [[ ${IS_INODES_USAGE_THRESHOLD} == 1 ]]; then
    echo "NEED TO CLEAN: Volume ${DOCKERD_DATA_ROOT} inodes usage thershold ${INODES_USAGE_THRESHOLD} reached"
@@ -164,7 +165,7 @@ clean_volumes(){
     echo "    Checking volume ${VOLUME_NAME} for deletion"
     if grep -q ${VOLUME_NAME} ${RETAINED_VOLUMES_FILE}; then
         echo "    Volume ${VOLUME_NAME} should be retained - appears in RETAINED_VOLUMES_FILE"
-        break
+        continue
     fi
 
     echo "Cleaning volume ${VOLUME_NAME} ... "
