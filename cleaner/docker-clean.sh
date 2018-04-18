@@ -162,13 +162,13 @@ clean_volumes(){
   do
     VOLUME_NAME=$(basename $ii)
 
-    echo "    Checking volume ${VOLUME_NAME} for deletion"
+    echo -e "\n ---- Checking volume ${VOLUME_NAME} for deletion"
     if grep -q ${VOLUME_NAME} ${RETAINED_VOLUMES_FILE}; then
         echo "    Volume ${VOLUME_NAME} should be retained - appears in RETAINED_VOLUMES_FILE"
         continue
     fi
 
-    echo "Cleaning volume ${VOLUME_NAME} ... "
+    echo "    Cleaning volume ${VOLUME_NAME} ... "
     if [[ -n "${CLEANER_DRY_RUN}" ]]; then
       echo docker volume rm "${VOLUME_NAME}"
     else
