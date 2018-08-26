@@ -20,7 +20,7 @@ DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT}
 COLLECT_INTERVAL=${COLLECT_INTERVAL}
 "
 
-LABELS="dind_name=\"$(hostname)\",data_root_path=\"${DOCKERD_DATA_ROOT}\""
+LABELS="dind_pod_name=\"$(hostname)\",data_root_path=\"${DOCKERD_DATA_ROOT}\""
 echo "COMMON_LABELS=${LABELS}"
 
 DOCKER_PS_OUT_FILE=/tmp/docker-ps.out
@@ -107,7 +107,7 @@ EOF
 docker_volume_last_pruned_ts{$LABELS} ${DOCKER_VOLUME_LAST_PRUNED_TS}
 
 EOF
-  fi  
+  fi
   
   mv ${METRIC_FILE_TMP} ${METRIC_FILE}
   sleep $COLLECT_INTERVAL
