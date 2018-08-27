@@ -208,42 +208,43 @@ clean_images(){
      cat ${RETAINED_IMAGES_FILE}.names | while read image_name
      do
        if [[ -n "${image_name}" ]]; then
-          docker image inspect --format '{{ .ID }}' "${image_name}" | sed  -E 's/^sha256:(.*)/\1/' >> "${RETAINED_IMAGES_FILE}"
+          docker image inspect --format '{{ .ID }}' "${image_name}" >> "${RETAINED_IMAGES_FILE}"
        fi
      done
   fi
 
-  IMAGES_LIST_FILE=/tmp/images.$$
-  echo "Listing all images into ${IMAGES_LIST_FILE} "
-  docker images -aq --no-trunc | sed  -E 's/^sha256:(.*)/\1/' > "${IMAGES_LIST_FILE}"
+  dind-cleaner --retained-images-file ${RETAINED_IMAGES_FILE}
+  # IMAGES_LIST_FILE=/tmp/images.$$
+  # echo "Listing all images into ${IMAGES_LIST_FILE} "
+  # docker images -aq --no-trunc | sed  -E 's/^sha256:(.*)/\1/' > "${IMAGES_LIST_FILE}"
 
-  cat "${IMAGES_LIST_FILE}" | while read image_to_delete
-  do
-    echo -e "\n ---- Checking image ${image_to_delete} for deletion: "
-    IMAGES_WITH_CHILDS_FILE=/tmp/image_to_delete_${image_to_delete}
-    echo ${image_to_delete} > ${IMAGES_WITH_CHILDS_FILE}
+  # cat "${IMAGES_LIST_FILE}" | while read image_to_delete
+  # do
+  #   echo -e "\n ---- Checking image ${image_to_delete} for deletion: "
+  #   IMAGES_WITH_CHILDS_FILE=/tmp/image_to_delete_${image_to_delete}
+  #   echo ${image_to_delete} > ${IMAGES_WITH_CHILDS_FILE}
 
-    echo "   finding childs images for ${image_to_delete}"
-    ${DIR}/docker_descendants.py ${image_to_delete} |  awk '{print $3}' >> ${IMAGES_WITH_CHILDS_FILE}
-    tac ${IMAGES_WITH_CHILDS_FILE} | while read image
-    do
-      IMAGE_REPO_TAGS=$(docker image inspect --format '{{ .RepoTags }}' ${image} 2>/dev/null)
-      if [[ $? != 0 ]]; then
-         echo "    Image ${image} has been already deleted"
-         continue
-      fi
-      echo "    Deleting image ${image} - ${IMAGE_REPO_TAGS} "
-      if grep -q ${image} ${RETAINED_IMAGES_FILE}; then
-         echo "    Image ${image} should be retained - appears in RETAINED_IMAGES_FILE"
-         break
-      fi
-      if [[ -n "${CLEANER_DRY_RUN}" ]]; then
-         echo docker rmi -f ${image}
-      else
-         docker rmi -f ${image}
-      fi
-    done
-  done
+  #   echo "   finding childs images for ${image_to_delete}"
+  #   ${DIR}/docker_descendants.py ${image_to_delete} |  awk '{print $3}' >> ${IMAGES_WITH_CHILDS_FILE}
+  #   tac ${IMAGES_WITH_CHILDS_FILE} | while read image
+  #   do
+  #     IMAGE_REPO_TAGS=$(docker image inspect --format '{{ .RepoTags }}' ${image} 2>/dev/null)
+  #     if [[ $? != 0 ]]; then
+  #        echo "    Image ${image} has been already deleted"
+  #        continue
+  #     fi
+  #     echo "    Deleting image ${image} - ${IMAGE_REPO_TAGS} "
+  #     if grep -q ${image} ${RETAINED_IMAGES_FILE}; then
+  #        echo "    Image ${image} should be retained - appears in RETAINED_IMAGES_FILE"
+  #        break
+  #     fi
+  #     if [[ -n "${CLEANER_DRY_RUN}" ]]; then
+  #        echo docker rmi -f ${image}
+  #     else
+  #        docker rmi -f ${image}
+  #     fi
+  #   done
+  # done
 }
 
 clean_containers
