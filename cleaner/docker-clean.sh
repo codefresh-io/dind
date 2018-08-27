@@ -115,15 +115,6 @@ if [[ ${IS_INODES_USAGE_THRESHOLD} == 1 ]]; then
    NEED_TO_CLEEN=1
 fi
 
-if [[ -z "${NEED_TO_CLEEN}" ]]; then
-  echo "NO need to clean, EXITING: it is new volume or it was cleaned less than ${CLEAN_PERIOD_SECONDS} ago it was cleaned less than ${CLEAN_PERIOD_BUILDS} build ago "
-  display_df
-  exit 0
-fi
-
-echo -e "\n####### NEED TO CLEAN Volume - starting"
-
-
 clean_containers(){
   echo -e "\n############# Cleaning Containers ############# - $(date) "
   if [[ -n "${CLEANER_DRY_RUN}" ]]; then
@@ -213,7 +204,7 @@ clean_images(){
      done
   fi
 
-  dind-cleaner --retained-images-file ${RETAINED_IMAGES_FILE}
+  dind-cleaner images --retained-images-file ${RETAINED_IMAGES_FILE}
   # IMAGES_LIST_FILE=/tmp/images.$$
   # echo "Listing all images into ${IMAGES_LIST_FILE} "
   # docker images -aq --no-trunc | sed  -E 's/^sha256:(.*)/\1/' > "${IMAGES_LIST_FILE}"
@@ -246,6 +237,15 @@ clean_images(){
   #   done
   # done
 }
+
+if [[ -z "${NEED_TO_CLEEN}" ]]; then
+  echo "NO need to clean, EXITING: running on new volume or it was cleaned less than ${CLEAN_PERIOD_SECONDS} ago it was cleaned less than ${CLEAN_PERIOD_BUILDS} build ago "
+  clean_containers
+  display_df
+  exit 0
+fi
+
+echo -e "\n####### NEED TO CLEAN Volume - starting"
 
 clean_containers
 

@@ -1,7 +1,7 @@
 FROM quay.io/prometheus/node-exporter:v0.15.1 AS node-exporter
 # install node-exporter
 
-FROM codefresh/dind-cleaner:v0.1 AS dind-cleaner
+FROM codefresh/dind-cleaner:v1.0 AS dind-cleaner
 
 FROM docker:17.12-dind
 RUN apk add bash jq --no-cache
