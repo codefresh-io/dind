@@ -115,6 +115,19 @@ if [[ ${IS_INODES_USAGE_THRESHOLD} == 1 ]]; then
    NEED_TO_CLEEN=1
 fi
 
+clean_temporary_objects(){
+  echo -e "\n############# Cleaning Images label=io.codefresh.operationName=Exporting volume data ############# - $(date) "
+  for ii in $(docker images -q -f 'label=io.codefresh.operationName=Exporting volume data')
+  do
+    if [[ -n "${CLEANER_DRY_RUN}" ]]; then
+      echo "Running in DRY_RUN, just display rm commands"
+      echo docker rmi $ii
+    else
+      docker rmi $ii
+    fi
+  done
+}
+
 clean_containers(){
   echo -e "\n############# Cleaning Containers ############# - $(date) "
   if [[ -n "${CLEANER_DRY_RUN}" ]]; then
@@ -238,17 +251,17 @@ clean_images(){
   # done
 }
 
+clean_containers
+display_df
+clean_temporary_objects
+display_df
+
 if [[ -z "${NEED_TO_CLEEN}" ]]; then
   echo "NO need to clean, EXITING: running on new volume or it was cleaned less than ${CLEAN_PERIOD_SECONDS} ago it was cleaned less than ${CLEAN_PERIOD_BUILDS} build ago "
-  clean_containers
-  display_df
   exit 0
 fi
 
-echo -e "\n####### NEED TO CLEAN Volume - starting"
-
-clean_containers
-
+echo -e "\n####### NEED TO CLEAN volumes and/or images - starting"
 clean_volumes
 
 clean_images
