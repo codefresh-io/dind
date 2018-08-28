@@ -66,7 +66,7 @@ else
 
   LAST_CLEANED_TS=$(cat ${LAST_CLEANED_TS_FILE})
   LAST_CLEANED_SECONDS_AGO=$(( CURRENT_TS - LAST_CLEANED_TS ))
-  echo "LAST_CLEANED_TS = ${LAST_CLEANED_TS} , LAST_CLEANED_SECONDS_AGO = ${LAST_CLEANED_SECONDS_AGO} vs CLEAN_PERIOD_SECONDS = ${CLEAN_PERIOD_SECONDS} "
+  echo "LAST_CLEANED_TS = ${LAST_CLEANED_TS} CURRENT_TS = ${CURRENT_TS}, LAST_CLEANED_SECONDS_AGO = ${LAST_CLEANED_SECONDS_AGO} vs CLEAN_PERIOD_SECONDS = ${CLEAN_PERIOD_SECONDS} "
   if [[ ${LAST_CLEANED_SECONDS_AGO} -ge ${CLEAN_PERIOD_SECONDS} ]]; then
     echo "NEED TO CLEAN: Volume was last cleaned ${LAST_CLEANED_SECONDS_AGO} seconds ago"
     NEED_TO_CLEEN=1
@@ -77,21 +77,27 @@ echo -e "\nChecking if  need to clean by last cleaned pod - CLEAN_PERIOD_BUILDS=
 if [[ ! -f "${LAST_CLEANED_POD_FILE}" ]]; then
   echo "First launch of dind cleaner - ${LAST_CLEANED_POD_FILE} file does not exist. Creating"
   echo ${POD_NAME} > "${LAST_CLEANED_POD_FILE}"
-else
-  LAST_CLEANED_POD_NAME=$(cat ${LAST_CLEANED_POD_FILE})
-  LAST_CLEANED_POD_LINE_GREP=$(grep -n ${LAST_CLEANED_POD_NAME} "${DIND_VOLUME_USED_BY_PODS_FILE}" )
-  THIS_POD_LINE_GREP=$(grep -n ${POD_NAME} "${DIND_VOLUME_USED_BY_PODS_FILE}" )
-  if [[ -n "${LAST_CLEANED_POD_LINE_GREP}" && -n "${THIS_POD_LINE_GREP}" ]]; then
-    LAST_CLEANED_POD_LINE=$(echo "${LAST_CLEANED_POD_LINE_GREP}" | cut -d":" -f1)
-    THIS_POD_LINE=$(echo "${THIS_POD_LINE_GREP}" | cut -d":" -f1)
-    LAST_CLEANED_BUILDS_AGO=$(( THIS_POD_LINE - LAST_CLEANED_POD_LINE ))
-    if [[ ${LAST_CLEANED_BUILDS_AGO} -ge ${CLEAN_PERIOD_BUILDS} ]]; then
-        echo "NEED TO CLEAN: Volume was last cleaned ${LAST_CLEANED_BUILDS_AGO} builds ago"
-        NEED_TO_CLEEN=1
-    fi
-  fi
 fi
 
+LAST_CLEANED_POD_NAME=$(cat ${LAST_CLEANED_POD_FILE})
+if [[ -z "${LAST_CLEANED_POD_NAME}" ]]; then
+   LAST_CLEANED_POD_NAME=${POD_NAME}
+fi
+LAST_CLEANED_POD_LINE_GREP=$(grep -n ${LAST_CLEANED_POD_NAME} "${DIND_VOLUME_USED_BY_PODS_FILE}" | tail -n1)
+THIS_POD_LINE_GREP=$(grep -n ${POD_NAME} "${DIND_VOLUME_USED_BY_PODS_FILE}" | tail -n1)
+
+if [[ -n "${LAST_CLEANED_POD_LINE_GREP}" && -n "${THIS_POD_LINE_GREP}" ]]; then
+  LAST_CLEANED_POD_LINE=$(echo "${LAST_CLEANED_POD_LINE_GREP}" | cut -d":" -f1)
+  THIS_POD_LINE=$(echo "${THIS_POD_LINE_GREP}" | cut -d":" -f1)
+  LAST_CLEANED_BUILDS_AGO=$(( THIS_POD_LINE - LAST_CLEANED_POD_LINE ))
+  echo "LAST_CLEANED_BUILDS_AGO = ${LAST_CLEANED_BUILDS_AGO} vs CLEAN_PERIOD_BUILDS = ${CLEAN_PERIOD_BUILDS}"
+  if [[ ${LAST_CLEANED_BUILDS_AGO} -ge ${CLEAN_PERIOD_BUILDS} ]]; then
+      echo "NEED TO CLEAN: Volume was last cleaned ${LAST_CLEANED_BUILDS_AGO} builds ago"
+      NEED_TO_CLEEN=1
+  fi
+else
+  echo "WARNING: cannot find LAST_CLEANED_POD_NAME=${LAST_CLEANED_POD_NAME} or THIS_POD=${POD_NAME} in DIND_VOLUME_USED_BY_PODS_FILE=${DIND_VOLUME_USED_BY_PODS_FILE} "
+fi
 
 check_disk_usage_threshold(){
    df ${DOCKERD_DATA_ROOT} | awk -v T=${DISK_USAGE_THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
@@ -115,14 +121,18 @@ if [[ ${IS_INODES_USAGE_THRESHOLD} == 1 ]]; then
    NEED_TO_CLEEN=1
 fi
 
-if [[ -z "${NEED_TO_CLEEN}" ]]; then
-  echo "NO need to clean, EXITING: it is new volume or it was cleaned less than ${CLEAN_PERIOD_SECONDS} ago it was cleaned less than ${CLEAN_PERIOD_BUILDS} build ago "
-  display_df
-  exit 0
-fi
-
-echo -e "\n####### NEED TO CLEAN Volume - starting"
-
+clean_temporary_objects(){
+  echo -e "\n############# Cleaning Images label=io.codefresh.operationName=Exporting volume data ############# - $(date) "
+  for ii in $(docker images -q -f 'label=io.codefresh.operationName=Exporting volume data')
+  do
+    if [[ -n "${CLEANER_DRY_RUN}" ]]; then
+      echo "Running in DRY_RUN, just display rm commands"
+      echo docker rmi $ii
+    else
+      docker rmi $ii
+    fi
+  done
+}
 
 clean_containers(){
   echo -e "\n############# Cleaning Containers ############# - $(date) "
@@ -208,46 +218,56 @@ clean_images(){
      cat ${RETAINED_IMAGES_FILE}.names | while read image_name
      do
        if [[ -n "${image_name}" ]]; then
-          docker image inspect --format '{{ .ID }}' "${image_name}" | sed  -E 's/^sha256:(.*)/\1/' >> "${RETAINED_IMAGES_FILE}"
+          docker image inspect --format '{{ .ID }}' "${image_name}" >> "${RETAINED_IMAGES_FILE}"
        fi
      done
   fi
 
-  IMAGES_LIST_FILE=/tmp/images.$$
-  echo "Listing all images into ${IMAGES_LIST_FILE} "
-  docker images -aq --no-trunc | sed  -E 's/^sha256:(.*)/\1/' > "${IMAGES_LIST_FILE}"
+  dind-cleaner images --retained-images-file ${RETAINED_IMAGES_FILE}
+  # IMAGES_LIST_FILE=/tmp/images.$$
+  # echo "Listing all images into ${IMAGES_LIST_FILE} "
+  # docker images -aq --no-trunc | sed  -E 's/^sha256:(.*)/\1/' > "${IMAGES_LIST_FILE}"
 
-  cat "${IMAGES_LIST_FILE}" | while read image_to_delete
-  do
-    echo -e "\n ---- Checking image ${image_to_delete} for deletion: "
-    IMAGES_WITH_CHILDS_FILE=/tmp/image_to_delete_${image_to_delete}
-    echo ${image_to_delete} > ${IMAGES_WITH_CHILDS_FILE}
+  # cat "${IMAGES_LIST_FILE}" | while read image_to_delete
+  # do
+  #   echo -e "\n ---- Checking image ${image_to_delete} for deletion: "
+  #   IMAGES_WITH_CHILDS_FILE=/tmp/image_to_delete_${image_to_delete}
+  #   echo ${image_to_delete} > ${IMAGES_WITH_CHILDS_FILE}
 
-    echo "   finding childs images for ${image_to_delete}"
-    ${DIR}/docker_descendants.py ${image_to_delete} |  awk '{print $3}' >> ${IMAGES_WITH_CHILDS_FILE}
-    tac ${IMAGES_WITH_CHILDS_FILE} | while read image
-    do
-      IMAGE_REPO_TAGS=$(docker image inspect --format '{{ .RepoTags }}' ${image} 2>/dev/null)
-      if [[ $? != 0 ]]; then
-         echo "    Image ${image} has been already deleted"
-         continue
-      fi
-      echo "    Deleting image ${image} - ${IMAGE_REPO_TAGS} "
-      if grep -q ${image} ${RETAINED_IMAGES_FILE}; then
-         echo "    Image ${image} should be retained - appears in RETAINED_IMAGES_FILE"
-         break
-      fi
-      if [[ -n "${CLEANER_DRY_RUN}" ]]; then
-         echo docker rmi -f ${image}
-      else
-         docker rmi -f ${image}
-      fi
-    done
-  done
+  #   echo "   finding childs images for ${image_to_delete}"
+  #   ${DIR}/docker_descendants.py ${image_to_delete} |  awk '{print $3}' >> ${IMAGES_WITH_CHILDS_FILE}
+  #   tac ${IMAGES_WITH_CHILDS_FILE} | while read image
+  #   do
+  #     IMAGE_REPO_TAGS=$(docker image inspect --format '{{ .RepoTags }}' ${image} 2>/dev/null)
+  #     if [[ $? != 0 ]]; then
+  #        echo "    Image ${image} has been already deleted"
+  #        continue
+  #     fi
+  #     echo "    Deleting image ${image} - ${IMAGE_REPO_TAGS} "
+  #     if grep -q ${image} ${RETAINED_IMAGES_FILE}; then
+  #        echo "    Image ${image} should be retained - appears in RETAINED_IMAGES_FILE"
+  #        break
+  #     fi
+  #     if [[ -n "${CLEANER_DRY_RUN}" ]]; then
+  #        echo docker rmi -f ${image}
+  #     else
+  #        docker rmi -f ${image}
+  #     fi
+  #   done
+  # done
 }
 
 clean_containers
+display_df
+clean_temporary_objects
+display_df
 
+if [[ -z "${NEED_TO_CLEEN}" ]]; then
+  echo "NO need to clean, EXITING: running on new volume or it was cleaned less than ${CLEAN_PERIOD_SECONDS} ago it was cleaned less than ${CLEAN_PERIOD_BUILDS} build ago "
+  exit 0
+fi
+
+echo -e "\n####### NEED TO CLEAN volumes and/or images - starting"
 clean_volumes
 
 clean_images
