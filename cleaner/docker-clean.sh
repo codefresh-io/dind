@@ -145,6 +145,16 @@ clean_containers(){
 
 }
 
+clean_networks(){
+  echo -e "\n############# Cleaning Networks ############# - $(date) "
+  if [[ -n "${CLEANER_DRY_RUN}" ]]; then
+     echo "Running in DRY_RUN, just display rm commands"
+     echo docker network prune -f
+  else
+     docker network prune -f
+  fi
+}
+
 clean_volumes(){
   echo -e "\n############# Cleaning Volumes ############# - $(date) "
   # Listing directories in /var/lib/docker/volumes and delete volume if its folder mtime>VOLUMES_RETAIN_PERIOD
@@ -224,43 +234,13 @@ clean_images(){
   fi
 
   dind-cleaner images --retained-images-file ${RETAINED_IMAGES_FILE}
-  # IMAGES_LIST_FILE=/tmp/images.$$
-  # echo "Listing all images into ${IMAGES_LIST_FILE} "
-  # docker images -aq --no-trunc | sed  -E 's/^sha256:(.*)/\1/' > "${IMAGES_LIST_FILE}"
-
-  # cat "${IMAGES_LIST_FILE}" | while read image_to_delete
-  # do
-  #   echo -e "\n ---- Checking image ${image_to_delete} for deletion: "
-  #   IMAGES_WITH_CHILDS_FILE=/tmp/image_to_delete_${image_to_delete}
-  #   echo ${image_to_delete} > ${IMAGES_WITH_CHILDS_FILE}
-
-  #   echo "   finding childs images for ${image_to_delete}"
-  #   ${DIR}/docker_descendants.py ${image_to_delete} |  awk '{print $3}' >> ${IMAGES_WITH_CHILDS_FILE}
-  #   tac ${IMAGES_WITH_CHILDS_FILE} | while read image
-  #   do
-  #     IMAGE_REPO_TAGS=$(docker image inspect --format '{{ .RepoTags }}' ${image} 2>/dev/null)
-  #     if [[ $? != 0 ]]; then
-  #        echo "    Image ${image} has been already deleted"
-  #        continue
-  #     fi
-  #     echo "    Deleting image ${image} - ${IMAGE_REPO_TAGS} "
-  #     if grep -q ${image} ${RETAINED_IMAGES_FILE}; then
-  #        echo "    Image ${image} should be retained - appears in RETAINED_IMAGES_FILE"
-  #        break
-  #     fi
-  #     if [[ -n "${CLEANER_DRY_RUN}" ]]; then
-  #        echo docker rmi -f ${image}
-  #     else
-  #        docker rmi -f ${image}
-  #     fi
-  #   done
-  # done
 }
 
 clean_containers
 display_df
 clean_temporary_objects
 display_df
+clean_networks
 
 if [[ -z "${NEED_TO_CLEEN}" ]]; then
   echo "NO need to clean, EXITING: running on new volume or it was cleaned less than ${CLEAN_PERIOD_SECONDS} ago it was cleaned less than ${CLEAN_PERIOD_BUILDS} build ago "
