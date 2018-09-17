@@ -79,7 +79,7 @@ fi
 echo "$(date) - Starting dockerd with /etc/docker/daemon.json: "
 cat /etc/docker/daemon.json
 
-DOCKERD_PARAMS=""
+#DOCKERD_PARAMS=""
 if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" ]]; then
    mkdir -p ${DIND_IMAGES_LIB_DIR}/../pods
    DOCKERD_DATA_ROOT=$(realpath ${DIND_IMAGES_LIB_DIR}/..)/pods/${POD_NAME}
@@ -90,12 +90,13 @@ if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" ]]; the
      echo "Trying to use image-lib-dir $ii ... "
      [[ -d "${DOCKERD_DATA_ROOT}" ]] && rm -rf "${DOCKERD_DATA_ROOT}"
      mv $ii "${DOCKERD_DATA_ROOT}" && \
-     DOCKERD_PARAMS="--data-root ${DOCKERD_DATA_ROOT}" && \
+     DOCKERD_PARAMS="${DOCKERD_PARAMS} --data-root ${DOCKERD_DATA_ROOT}" && \
      export DOCKERD_DATA_ROOT && \
      echo "Successfully moved ${ii} to ${DOCKERD_DATA_ROOT} " && \
      break
    done
 fi
+echo "DOCKERD_PARAMS = ${DOCKERD_PARAMS}"
 
 # Starting monitor
 ${DIR}/monitor/start.sh  <&- &
