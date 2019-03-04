@@ -233,7 +233,7 @@ clean_images(){
      done
   fi
 
-  dind-cleaner images --retained-images-file ${RETAINED_IMAGES_FILE}
+  dind-cleaner images --retained-images-file ${RETAINED_IMAGES_FILE} --image-retain-period ${IMAGE_RETAIN_PERIOD}
 }
 
 clean_containers
