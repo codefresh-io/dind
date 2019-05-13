@@ -83,11 +83,13 @@ cat /etc/docker/daemon.json
 for cc in $(find /etc/docker/certs.d -type d -maxdepth 1)
 do
   echo "Trying to process Registery Self-Signed certs dir $cc "
+  ls -l "${cc}"
   NEW_CERTS_DIR=$(echo $cc | sed -E 's/(.*)_([0-9]+)/\1\:\2/g')
+
   if [[ "${cc}" != "${NEW_CERTS_DIR}" ]]; then
     echo "Creating Registry Registery Self-Signed certs dir ${NEW_CERTS_DIR}"
     mkdir -pv "${NEW_CERTS_DIR}"
-    cp -vrfL ${cc}/{ca.crt,client.key,client.cert} ${NEW_CERTS_DIR}/
+    cp -vrfL "${cc}"/{ca.crt,client.key,client.cert} "${NEW_CERTS_DIR}"/
   fi
 done
 
