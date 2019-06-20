@@ -47,6 +47,11 @@ sigterm_trap(){
    echo "killing MONITOR_PID ${MONITOR_PID}"
    kill $MONITOR_PID
 
+   if [[ -n "${CLEANER_AGENT_PID}" ]]; then
+      echo "killing CLEANER_AGENT_PID ${CLEANER_AGENT_PID}"
+      kill $CLEANER_AGENT_PID
+   fi
+
    echo "killing DOCKER_PID ${DOCKER_PID}"
    kill $DOCKER_PID
    sleep 2
@@ -130,5 +135,12 @@ done
 
 DOCKER_PID=$(cat /var/run/docker.pid)
 echo "DOCKER_PID = ${DOCKER_PID} "
+
+# Starting cleaner agent
+if [[ -z "${DISABLE_CLEANER_AGENT}" ]]; then
+  ${DIR}/cleaner/cleaner-agent.sh  <&- &
+  CLEANER_AGENT_PID=$!
+fi
+
 wait ${DOCKER_PID}
 

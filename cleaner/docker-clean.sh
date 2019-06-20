@@ -31,14 +31,14 @@ DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/var/lib/docker}
 DIND_VOLUME_STAT_DIR=${DIND_VOLUME_STAT_DIR:-${DOCKERD_DATA_ROOT}/dind-volume}
 mkdir -p ${DIND_VOLUME_STAT_DIR}
 
-LAST_CLEANED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_cleaned_ts
 LAST_CLEANED_POD_FILE=${DIND_VOLUME_STAT_DIR}/last_cleaned_pod
 DIND_VOLUME_USED_BY_PODS_FILE=${DIND_VOLUME_STAT_DIR}/pods
+
+LAST_PRUNED_POD_FILE=${DIND_VOLUME_STAT_DIR}/last_pruned_pod
 
 POD_NAME=${POD_NAME:-$(hostname)}
 CURRENT_TS=$(date +%s)
 
-DIR=$(dirname "${BASH_SOURCE}")
 display_df
 
 #### Checking if we need to clean by dind stat
@@ -107,8 +107,7 @@ if [[ ${IS_INODES_USAGE_THRESHOLD} == 1 ]]; then
    NEED_TO_CLEEN=1
 fi
 
-
-clean_containers
+clean_containers -f
 display_df
 clean_temporary_objects
 display_df
@@ -155,8 +154,6 @@ else
   if [[ -n "${CLEANER_DRY_RUN}" ]]; then
     echo "Dry run mode - do not actually prune"
   else
-    LAST_PRUNED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_pruned_ts
-    LAST_PRUNED_POD_FILE=${DIND_VOLUME_STAT_DIR}/last_pruned_pod
     docker system prune -a --volumes --force
     
     display_df
@@ -165,10 +162,3 @@ else
     echo ${POD_NAME} > "${LAST_PRUNED_POD_FILE}"
   fi
 fi
-
-
-
-
-
-
-

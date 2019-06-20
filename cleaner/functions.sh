@@ -5,6 +5,21 @@ DIR=$(dirname ${BASH_SOURCE})
 CONFIG_FILE=${DIR}/config
 source "${CONFIG_FILE}"
 
+lock_file() {
+  [[ -f ${LOCK_FILE} ]] && echo "Waiting for another instance of cleaner to stop - ${LOCK_FILE} exists"
+  while [[ -f ${LOCK_FILE} ]]
+  do
+    sleep 1
+  done
+  echo "Locking - touch ${LOCK_FILE}"
+  date +%s > ${LOCK_FILE}
+}
+
+unlock_file(){
+  echo "Unlocking - rm ${LOCK_FILE}"
+  rm -fv ${LOCK_FILE}
+}
+
 display_df(){
   echo -e "\nCurrent disk space usage of $DOCKERD_DATA_ROOT at $(date) is: "
   df ${DOCKERD_DATA_ROOT}
@@ -35,6 +50,18 @@ clean_temporary_objects(){
       docker rmi $ii
     fi
   done
+}
+
+clean_stopped_containers(){
+  echo -e "\n############# Cleaning Stopped Containers ############# - $(date) "
+  DOCKER_RM_PARAMS=$@
+  echo "   docker rm params = $DOCKER_RM_PARAMS"
+  if [[ -n "${CLEANER_DRY_RUN}" ]]; then
+     echo "Running in DRY_RUN, just display rm commands"
+     docker ps -a --filter "status=exited" | xargs -n1 echo docker rm $DOCKER_RM_PARAMS
+  else
+     docker ps -a --filter "status=exited" | xargs -n1 docker rm $DOCKER_RM_PARAMS
+  fi
 }
 
 clean_containers(){
