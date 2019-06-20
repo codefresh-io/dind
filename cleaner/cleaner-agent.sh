@@ -27,7 +27,7 @@ trap sigterm_trap SIGTERM SIGINT
 need_to_clean() {
   IS_DISK_USAGE_THRESHOLD=$(check_disk_usage_threshold ${START_DISK_USAGE_THRESHOLD})
   IS_INODES_USAGE_THRESHOLD=$(check_inodes_usage_threshold ${START_INODES_USAGE_THRESHOLD})
-  if [[ ${IS_INODES_USAGE_THRESHOLD} == 1 || ${IS_INODES_USAGE_THRESHOLD} == 1 ]]; then
+  if [[ ${IS_DISK_USAGE_THRESHOLD} == 1 || ${IS_INODES_USAGE_THRESHOLD} == 1 ]]; then
       echo 1
   fi
 }
@@ -61,7 +61,8 @@ do
   if [[ -n $(need_to_clean) ]]; then
     echo "$0: CLEANER_AGENT: NEEED TO CLEAN - cleaning volumes"
     display_df
-    lock_file 
+    lock_file
+    save_events
     clean_volumes
     (( CLEANER_AGENT_ACTIONS_VOLUMES ++ ))
     echo "$0: CLEANER_AGENT_ACTIONS_VOLUMES=$CLEANER_AGENT_ACTIONS_VOLUMES, updating metric file ${CLEANER_AGENT_ACTIONS_VOLUMES_FILE}"
@@ -74,7 +75,8 @@ do
   if [[ -n $(need_to_clean) ]]; then
     echo "$0: CLEANER_AGENT: NEEED TO CLEAN - cleaning images"
     display_df
-    lock_file 
+    lock_file
+    save_events
     clean_images
     (( CLEANER_AGENT_ACTIONS_IMAGES ++ ))
     echo "$0: CLEANER_AGENT_ACTIONS_IMAGES=$CLEANER_AGENT_ACTIONS_IMAGES, updating metric file ${CLEANER_AGENT_ACTIONS_IMAGES_FILE}"

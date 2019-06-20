@@ -35,14 +35,14 @@ sigterm_trap(){
    DOCKER_EVENTS_FORMAT='{{ json . }}'
    echo -e "\nSaving current docker events to ${DOCKER_EVENTS_FILE} "
    docker events --until 0s --format "${DOCKER_EVENTS_FORMAT}" > "${DOCKER_EVENTS_FILE}"
-   echo "Cleaning old events files"
-   find ${DOCKER_EVENTS_DIR} -type f -mtime +10 -exec rm -fv {} \;
-
 
    if [[ -n "${CLEAN_DOCKER}" ]]; then
      echo "Starting Cleaner"
      ${DIR}/cleaner/docker-clean.sh
    fi
+   
+   echo "Cleaning old events files"
+   find ${DOCKER_EVENTS_DIR} -type f -mtime +10 -exec rm -fv {} \;
 
    echo "killing MONITOR_PID ${MONITOR_PID}"
    kill $MONITOR_PID

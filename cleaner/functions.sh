@@ -20,6 +20,16 @@ unlock_file(){
   rm -fv ${LOCK_FILE}
 }
 
+save_events(){
+  FILE_NAME=$(date +%s)
+  DOCKER_EVENTS_DIR=${DIND_VOLUME_STAT_DIR}/events
+  mkdir -p ${DOCKER_EVENTS_DIR}
+  DOCKER_EVENTS_FILE="${DOCKER_EVENTS_DIR}"/"${FILE_NAME}"
+  DOCKER_EVENTS_FORMAT='{{ json . }}'
+  echo -e "\nSaving current docker events to ${DOCKER_EVENTS_FILE} "
+  docker events --until 0s --format "${DOCKER_EVENTS_FORMAT}" > "${DOCKER_EVENTS_FILE}"
+}
+
 display_df(){
   echo -e "\nCurrent disk space usage of $DOCKERD_DATA_ROOT at $(date) is: "
   df ${DOCKERD_DATA_ROOT}
@@ -58,9 +68,9 @@ clean_stopped_containers(){
   echo "   docker rm params = $DOCKER_RM_PARAMS"
   if [[ -n "${CLEANER_DRY_RUN}" ]]; then
      echo "Running in DRY_RUN, just display rm commands"
-     docker ps -a --filter "status=exited" | xargs -n1 echo docker rm $DOCKER_RM_PARAMS
+     docker ps -aq --filter "status=exited" | xargs -n1 echo docker rm $DOCKER_RM_PARAMS
   else
-     docker ps -a --filter "status=exited" | xargs -n1 docker rm $DOCKER_RM_PARAMS
+     docker ps -aq --filter "status=exited" | xargs -n1 docker rm $DOCKER_RM_PARAMS
   fi
 }
 
