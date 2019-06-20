@@ -107,7 +107,7 @@ clean_volumes(){
   RETAINED_VOLUMES_FILE=/tmp/retained_volumes.$$
   rm -f ${RETAINED_VOLUMES_FILE}
 
-  CURRENT_TS=${CURRENT_TS:-$(date +%s)}
+  CURRENT_TS=$(date +%s)
   echo "Finding recently used volumes by saved events within VOLUMES_RETAIN_PERIOD= ${VOLUMES_RETAIN_PERIOD}s"
   for ii in $(find "${DOCKER_EVENTS_DIR}/" -mindepth 1 -maxdepth 1 -type f )
   do
@@ -153,7 +153,7 @@ clean_images(){
   RETAINED_IMAGES_FILE=/tmp/retained_images.$$
   rm -f ${RETAINED_IMAGES_FILE} ${RETAINED_IMAGES_FILE}.names
 
-  CURRENT_TS=${CURRENT_TS:-$(date +%s)}
+  CURRENT_TS=$(date +%s)
   echo "Finding recently used images by saved events within IMAGE_RETAIN_PERIOD=${IMAGE_RETAIN_PERIOD}s"
   for ii in $(find "${DOCKER_EVENTS_DIR}/" -mindepth 1 -maxdepth 1 -type f )
   do
