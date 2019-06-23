@@ -36,6 +36,11 @@ sigterm_trap(){
    echo -e "\nSaving current docker events to ${DOCKER_EVENTS_FILE} "
    docker events --until 0s --format "${DOCKER_EVENTS_FORMAT}" > "${DOCKER_EVENTS_FILE}"
 
+   if [[ -n "${CLEANER_AGENT_PID}" ]]; then
+      echo "killing CLEANER_AGENT_PID ${CLEANER_AGENT_PID}"
+      kill $CLEANER_AGENT_PID
+   fi
+
    if [[ -n "${CLEAN_DOCKER}" ]]; then
      echo "Starting Cleaner"
      ${DIR}/cleaner/docker-clean.sh
@@ -46,11 +51,6 @@ sigterm_trap(){
 
    echo "killing MONITOR_PID ${MONITOR_PID}"
    kill $MONITOR_PID
-
-   if [[ -n "${CLEANER_AGENT_PID}" ]]; then
-      echo "killing CLEANER_AGENT_PID ${CLEANER_AGENT_PID}"
-      kill $CLEANER_AGENT_PID
-   fi
 
    echo "killing DOCKER_PID ${DOCKER_PID}"
    kill $DOCKER_PID
