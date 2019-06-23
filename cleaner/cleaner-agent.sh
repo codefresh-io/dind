@@ -21,6 +21,9 @@ sigterm_trap(){
   echo -e "\n    ## $0 - $(date) - SIGTERM received ##"
   export EXIT=1
   rm -vf ${LOCK_FILE}
+  [[ -f ${CLEANER_AGENT_ACTIONS_CONTAINERS_FILE} ]] && rm -fv ${CLEANER_AGENT_ACTIONS_CONTAINERS_FILE}
+  [[ -f ${CLEANER_AGENT_ACTIONS_VOLUMES_FILE} ]] && rm -fv ${CLEANER_AGENT_ACTIONS_VOLUMES_FILE}
+  [[ -f ${CLEANER_AGENT_ACTIONS_IMAGES_FILE} ]] && rm -fv ${CLEANER_AGENT_ACTIONS_IMAGES_FILE}
 }
 trap sigterm_trap SIGTERM SIGINT
 
