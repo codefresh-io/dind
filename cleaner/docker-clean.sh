@@ -107,6 +107,7 @@ if [[ ${IS_INODES_USAGE_THRESHOLD} == 1 ]]; then
    NEED_TO_CLEEN=1
 fi
 
+lock_file
 clean_containers -f
 display_df
 clean_temporary_objects
@@ -162,3 +163,4 @@ else
     echo ${POD_NAME} > "${LAST_PRUNED_POD_FILE}"
   fi
 fi
+unlock_file
