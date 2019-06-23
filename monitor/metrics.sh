@@ -14,6 +14,10 @@ mkdir -p ${DIND_VOLUME_STAT_DIR}
 LAST_CLEANED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_cleaned_ts
 LAST_PRUNED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_pruned_ts
 
+CLEANER_AGENT_ACTIONS_CONTAINERS_FILE=${DIND_VOLUME_STAT_DIR}/cleaner_agent_actions_containers
+CLEANER_AGENT_ACTIONS_VOLUMES_FILE=${DIND_VOLUME_STAT_DIR}/cleaner_agent_actions_volumes
+CLEANER_AGENT_ACTIONS_IMAGES_FILE=${DIND_VOLUME_STAT_DIR}/cleaner_agent_actions_images
+
 echo "Started $0 at $(date)
 METRIC_FILE=${METRIC_FILE}
 DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT}
@@ -108,7 +112,37 @@ docker_volume_last_pruned_ts{$LABELS} ${DOCKER_VOLUME_LAST_PRUNED_TS}
 
 EOF
   fi
-  
+
+  if [[ -f ${CLEANER_AGENT_ACTIONS_CONTAINERS_FILE} ]]; then
+     CLEANER_AGENT_ACTIONS_CONTAINERS=$(cat ${CLEANER_AGENT_ACTIONS_CONTAINERS_FILE})
+     cat <<EOF >> $METRIC_FILE_TMP
+# TYPE docker_volume_cleaner_agent_actions_containers gauge
+# HELP docker_volume_cleaner_agent_actions_containers container cleans done by cleaner_agent.sh
+docker_volume_cleaner_agent_actions_containers{$LABELS} ${CLEANER_AGENT_ACTIONS_CONTAINERS}
+
+EOF
+  fi
+
+  if [[ -f ${CLEANER_AGENT_ACTIONS_VOLUMES_FILE} ]]; then
+     CLEANER_AGENT_ACTIONS_VOLUMES=$(cat ${CLEANER_AGENT_ACTIONS_VOLUMES_FILE})
+     cat <<EOF >> $METRIC_FILE_TMP
+# TYPE docker_volume_cleaner_agent_actions_volumes gauge
+# HELP docker_volume_cleaner_agent_actions_volumes volumes cleans done by cleaner_agent.sh
+docker_volume_cleaner_agent_actions_volumes{$LABELS} ${CLEANER_AGENT_ACTIONS_VOLUMES}
+
+EOF
+  fi
+
+  if [[ -f ${CLEANER_AGENT_ACTIONS_IMAGES_FILE} ]]; then
+     CLEANER_AGENT_ACTIONS_IMAGES=$(cat ${CLEANER_AGENT_ACTIONS_IMAGES_FILE})
+     cat <<EOF >> $METRIC_FILE_TMP
+# TYPE docker_volume_cleaner_agent_actions_images gauge
+# HELP docker_volume_cleaner_agent_actions_images images cleans done by cleaner_agent.sh
+docker_volume_cleaner_agent_actions_images{$LABELS} ${CLEANER_AGENT_ACTIONS_IMAGES}
+
+EOF
+  fi
+
   mv ${METRIC_FILE_TMP} ${METRIC_FILE}
   sleep $COLLECT_INTERVAL
 done
