@@ -17,13 +17,18 @@ FUNC_FILE=${DIR}/functions.sh
 echo "$0: Loading functions File $FUNC_FILE "
 source "${FUNC_FILE}"
 
-sigterm_trap(){
-  echo -e "\n    ## $0 - $(date) - SIGTERM received ##"
-  export EXIT=1
-  rm -vf ${LOCK_FILE}
+clean_metrics(){
   [[ -f ${CLEANER_AGENT_ACTIONS_CONTAINERS_FILE} ]] && rm -fv ${CLEANER_AGENT_ACTIONS_CONTAINERS_FILE}
   [[ -f ${CLEANER_AGENT_ACTIONS_VOLUMES_FILE} ]] && rm -fv ${CLEANER_AGENT_ACTIONS_VOLUMES_FILE}
   [[ -f ${CLEANER_AGENT_ACTIONS_IMAGES_FILE} ]] && rm -fv ${CLEANER_AGENT_ACTIONS_IMAGES_FILE}
+  [[ -f ${CLEANER_AGENT_ACTIONS_PURGES_FILE} ]] && rm -fv ${CLEANER_AGENT_ACTIONS_PURGES_FILE}
+}
+
+sigterm_trap(){
+  echo -e "\n    ## $0 - SIGTERM received - $(date) ##"
+  export EXIT=1
+  rm -vf ${LOCK_FILE}
+  clean_metrics
 }
 trap sigterm_trap SIGTERM SIGINT
 
@@ -38,13 +43,10 @@ SLEEP_INTERVAL=5
 
 echo "$0: initializing metrics"
 CLEANER_AGENT_ACTIONS_CONTAINERS=0
-rm -fv ${CLEANER_AGENT_ACTIONS_CONTAINERS_FILE}
-
 CLEANER_AGENT_ACTIONS_VOLUMES=0
-rm -fv ${CLEANER_AGENT_ACTIONS_VOLUMES_FILE}
-
 CLEANER_AGENT_ACTIONS_IMAGES=0
-rm -fv ${CLEANER_AGENT_ACTIONS_IMAGES_FILE}
+CLEANER_AGENT_ACTIONS_PURGES=0
+clean_metrics
 
 while true
 do
@@ -84,6 +86,19 @@ do
     (( CLEANER_AGENT_ACTIONS_IMAGES ++ ))
     echo "$0: CLEANER_AGENT_ACTIONS_IMAGES=$CLEANER_AGENT_ACTIONS_IMAGES, updating metric file ${CLEANER_AGENT_ACTIONS_IMAGES_FILE}"
     echo $CLEANER_AGENT_ACTIONS_IMAGES > ${CLEANER_AGENT_ACTIONS_IMAGES_FILE}
+    unlock_file
+    display_df
+  fi
+  [[ -n "${EXIT}" ]] && break
+
+  if [[ -n $(need_to_clean) ]]; then
+    echo "$0: CLEANER_AGENT: NEEED TO PURGE - purging all images created more than 3h ago"
+    display_df
+    lock_file
+    docker image prune -a --force --filter "until=3h"
+    (( CLEANER_AGENT_ACTIONS_PURGES ++ ))
+    echo "$0: CLEANER_AGENT_ACTIONS_PURGES=$CLEANER_AGENT_ACTIONS_PURGES, updating metric file ${CLEANER_AGENT_ACTIONS_PURGES_FILE}"
+    echo $CLEANER_AGENT_ACTIONS_PURGES > ${CLEANER_AGENT_ACTIONS_PURGES_FILE}
     unlock_file
     display_df
   fi

@@ -143,6 +143,16 @@ docker_volume_cleaner_agent_actions_images{$LABELS} ${CLEANER_AGENT_ACTIONS_IMAG
 EOF
   fi
 
+  if [[ -f ${CLEANER_AGENT_ACTIONS_PURGES_FILE} ]]; then
+     CLEANER_AGENT_ACTIONS_PURGES=$(cat ${CLEANER_AGENT_ACTIONS_PURGES_FILE})
+     cat <<EOF >> $METRIC_FILE_TMP
+# TYPE docker_volume_cleaner_agent_actions_purges gauge
+# HELP docker_volume_cleaner_agent_actions_purges docker purges done by cleaner_agent.sh
+docker_volume_cleaner_agent_actions_purges{$LABELS} ${CLEANER_AGENT_ACTIONS_PURGES}
+
+EOF
+  fi
+
   mv ${METRIC_FILE_TMP} ${METRIC_FILE}
   sleep $COLLECT_INTERVAL
 done
