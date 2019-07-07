@@ -154,7 +154,7 @@ do
 
   echo "Checking if other dockerd running on same /var/lib/docker"
   CONTEINERD_DB=${DOCKERD_DATA_ROOT}/containerd/daemon/io.containerd.metadata.v1.bolt/meta.db
-  if [[ -f ${CONTEINERD_DB} ]] && ; then
+  if [[ -f ${CONTEINERD_DB} ]]; then
     echo "Checking if another dockerd is running on same ${DOCKERD_DATA_ROOT} boltdb $CONTEINERD_DB is locked"
     CNT=0
     while ! bolter -f ${CONTEINERD_DB}
