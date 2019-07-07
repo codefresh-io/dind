@@ -3,7 +3,8 @@
 DIR=$(dirname $0)
 
 echo "Entering $0 at $(date) "
-DIND_VOLUME_STAT_DIR=${DIND_VOLUME_STAT_DIR:-/var/lib/docker/dind-volume}
+DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/var/lib/docker}
+DIND_VOLUME_STAT_DIR=${DIND_VOLUME_STAT_DIR:-${DOCKERD_DATA_ROOT}/dind-volume}
 DIND_VOLUME_CREATED_TS_FILE=${DIND_VOLUME_STAT_DIR}/created
 DIND_VOLUME_LAST_USED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_used
 DIND_VOLUME_USED_BY_PODS_FILE=${DIND_VOLUME_STAT_DIR}/pods
@@ -127,7 +128,7 @@ MONITOR_PID=$!
 ### start docker with retry
 DOCKERD_PID_FILE=/var/run/docker.pid
 DOCKERD_PID_MAXWAIT=${DOCKERD_PID_MAXWAIT:-20}
-DOCKER_UP_MAXWAIT=${DOCKERD_UP_MAXWAIT:-90}
+DOCKER_UP_MAXWAIT=${DOCKERD_UP_MAXWAIT:-60}
 while true
 do
   [[ -n "${SIGTERM}" ]] && break
@@ -148,9 +149,27 @@ do
         fi
         sleep 0.5
       done
-      rm -f ${DOCKERD_PID_FILE}
+      rm -fv ${DOCKERD_PID_FILE}
   fi
 
+  echo "Checking if other dockerd running on same /var/lib/docker"
+  CONTEINERD_DB=${DOCKERD_DATA_ROOT}/containerd/daemon/io.containerd.metadata.v1.bolt/meta.db
+  if [[ -f ${CONTEINERD_DB} ]] && ; then
+    echo "Checking if another dockerd is running on same ${DOCKERD_DATA_ROOT} boltdb $CONTEINERD_DB is locked"
+    CNT=0
+    while ! bolter -f ${CONTEINERD_DB}
+    do
+      echo "$(date) - Waiting for containerd boltd ${DOCKERD_PID_FILE}"
+      (( CNT++ ))
+      if (( CNT > ${DOCKER_UP_MAXWAIT} )); then
+        echo "  giving up and trying to start docker anyway Waited more than ${DOCKER_UP_MAXWAIT}s for containerd boltdb unlock"
+        break
+      fi
+      sleep 1
+    done
+  fi
+
+  echo "Starting dockerd"
   dockerd ${DOCKERD_PARAMS} <&- &
   echo "Waiting at most 20s for docker pid"
   CNT=0

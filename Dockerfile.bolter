@@ -1,0 +1,5 @@
+### Build bolter
+FROM golang:1.12.6-alpine3.9
+RUN apk add git
+RUN go get -u github.com/hasit/bolter
+
