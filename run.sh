@@ -135,7 +135,7 @@ do
   if [[ -f ${DOCKERD_PID_FILE} ]] || pgrep -l dockerd ; then
       DOCKERD_PID=$(cat ${DOCKERD_PID_FILE})
       echo "  Waiting for dockerd pid ${DOCKERD_PID_FILE} to exit ..."
-      local CNT=0
+      CNT=0
       pkill dockerd 
       while pgrep -l dockerd
       do
@@ -153,7 +153,7 @@ do
 
   dockerd ${DOCKERD_PARAMS} <&- &
   echo "Waiting at most 20s for docker pid"
-  local CNT=0
+  CNT=0
   while ! test -f "${DOCKERD_PID_FILE}" || test -z "$(cat ${DOCKERD_PID_FILE})"
   do
     echo "$(date) - Waiting for docker pid file ${DOCKERD_PID_FILE}"
@@ -166,7 +166,7 @@ do
   done
 
   echo "Waiting at most 2m for docker pid"
-  local CNT=0
+  CNT=0
   while ! docker ps
   do
     echo "$(date) - Waiting for docker running by check docker ps "
@@ -178,6 +178,7 @@ do
     sleep 1
   done
   echo "$(date) - dockerd has been started"
+  break
 done
 
 # dockerd ${DOCKERD_PARAMS} <&- &
