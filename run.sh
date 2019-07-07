@@ -132,7 +132,7 @@ while true
 do
   [[ -n "${SIGTERM}" ]] && break
   echo "Starting docker ..."
-  if [[ -f ${DOCKERD_PID_FILE} || pgrep -l dockerd ]]; then
+  if [[ -f ${DOCKERD_PID_FILE} ]] || pgrep -l dockerd ; then
       DOCKERD_PID=$(cat ${DOCKERD_PID_FILE})
       echo "  Waiting for dockerd pid ${DOCKERD_PID_FILE} to exit ..."
       local CNT=0
