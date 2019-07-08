@@ -141,6 +141,7 @@ do
       pkill dockerd 
       while pgrep -l dockerd
       do
+        [[ -n "${SIGTERM}" ]] && break 2
         (( CNT++ ))
         echo ".... old dockerd is still running - $(date)"
         if [[ ${CNT} -ge 120 ]]; then
@@ -160,6 +161,7 @@ do
     CNT=0
     while ! bolter -f ${CONTEINERD_DB}
     do
+      [[ -n "${SIGTERM}" ]] && break 2
       echo "$(date) - Waiting for containerd boltd ${CONTEINERD_DB}"
       (( CNT++ ))
       if (( CNT > ${DOCKERD_LOCK_MAXWAIT} )); then
@@ -178,6 +180,7 @@ do
   CNT=0
   while ! test -f "${DOCKERD_PID_FILE}" || test -z "$(cat ${DOCKERD_PID_FILE})"
   do
+    [[ -n "${SIGTERM}" ]] && break 2
     echo "$(date) - Waiting for docker pid file ${DOCKERD_PID_FILE}"
     (( CNT++ ))
     if (( CNT > ${DOCKERD_PID_MAXWAIT} )); then
@@ -191,6 +194,7 @@ do
   CNT=0
   while ! docker ps
   do
+    [[ -n "${SIGTERM}" ]] && break 2
     echo "$(date) - Waiting for docker running by check docker ps "
     (( CNT++ ))
     if (( CNT > ${DOCKER_UP_MAXWAIT} )); then
@@ -204,7 +208,7 @@ do
 done
 
 # Starting cleaner agent
-if [[ -z "${DISABLE_CLEANER_AGENT}" ]]; then
+if [[ -z "${DISABLE_CLEANER_AGENT}" && -z "${SIGTERM}" ]]; then
   ${DIR}/cleaner/cleaner-agent.sh  <&- &
   CLEANER_AGENT_PID=$!
 fi
