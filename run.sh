@@ -128,7 +128,8 @@ MONITOR_PID=$!
 ### start docker with retry
 DOCKERD_PID_FILE=/var/run/docker.pid
 DOCKERD_PID_MAXWAIT=${DOCKERD_PID_MAXWAIT:-20}
-DOCKER_UP_MAXWAIT=${DOCKERD_UP_MAXWAIT:-60}
+DOCKERD_LOCK_MAXWAIT=${DOCKERD_LOCK_MAXWAIT:-60}
+DOCKER_UP_MAXWAIT=${DOCKERD_UP_MAXWAIT:-90}
 while true
 do
   [[ -n "${SIGTERM}" ]] && break
@@ -147,26 +148,28 @@ do
           pkill -9 dockerd
           break
         fi
-        sleep 0.5
+        sleep 1
       done
       rm -fv ${DOCKERD_PID_FILE}
   fi
 
-  echo "Checking if other dockerd running on same /var/lib/docker"
+  echo "$(date) - Checking if other dockerd running on same /var/lib/docker by check locks on containerd/daemon/io.containerd.metadata.v1.bolt/meta.db "
   CONTEINERD_DB=${DOCKERD_DATA_ROOT}/containerd/daemon/io.containerd.metadata.v1.bolt/meta.db
   if [[ -f ${CONTEINERD_DB} ]]; then
     echo "Checking if another dockerd is running on same ${DOCKERD_DATA_ROOT} boltdb $CONTEINERD_DB is locked"
     CNT=0
     while ! bolter -f ${CONTEINERD_DB}
     do
-      echo "$(date) - Waiting for containerd boltd ${DOCKERD_PID_FILE}"
+      echo "$(date) - Waiting for containerd boltd ${CONTEINERD_DB}"
       (( CNT++ ))
-      if (( CNT > ${DOCKER_UP_MAXWAIT} )); then
-        echo "  giving up and trying to start docker anyway Waited more than ${DOCKER_UP_MAXWAIT}s for containerd boltdb unlock"
+      if (( CNT > ${DOCKERD_LOCK_MAXWAIT} )); then
+        echo "  giving up and trying to start docker anyway Waited more than ${DOCKERD_LOCK_MAXWAIT}s for containerd boltdb unlock"
         break
       fi
       sleep 1
     done
+  else 
+    echo "containerd db is not locked"
   fi
 
   echo "Starting dockerd"
@@ -200,21 +203,12 @@ do
   break
 done
 
-# dockerd ${DOCKERD_PARAMS} <&- &
-# CNT=0
-# while ! test -f /var/run/docker.pid || test -z "$(cat /var/run/docker.pid)" || ! docker ps
-# do
-#   echo "$(date) - Waiting for docker to start"
-#   sleep 2
-# done
-
-DOCKERD_PID=$(cat /var/run/docker.pid)
-echo "DOCKERD_PID = ${DOCKERD_PID} "
-
 # Starting cleaner agent
 if [[ -z "${DISABLE_CLEANER_AGENT}" ]]; then
   ${DIR}/cleaner/cleaner-agent.sh  <&- &
   CLEANER_AGENT_PID=$!
 fi
 
+DOCKERD_PID=$(cat /var/run/docker.pid)
+echo "DOCKERD_PID = ${DOCKERD_PID} "
 wait ${DOCKERD_PID}
