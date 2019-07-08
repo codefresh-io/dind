@@ -3,7 +3,8 @@
 DIR=$(dirname $0)
 
 echo "Entering $0 at $(date) "
-DIND_VOLUME_STAT_DIR=${DIND_VOLUME_STAT_DIR:-/var/lib/docker/dind-volume}
+DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/var/lib/docker}
+DIND_VOLUME_STAT_DIR=${DIND_VOLUME_STAT_DIR:-${DOCKERD_DATA_ROOT}/dind-volume}
 DIND_VOLUME_CREATED_TS_FILE=${DIND_VOLUME_STAT_DIR}/created
 DIND_VOLUME_LAST_USED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_used
 DIND_VOLUME_USED_BY_PODS_FILE=${DIND_VOLUME_STAT_DIR}/pods
@@ -24,7 +25,7 @@ echo "${POD_NAME} ${CURRENT_TS}" >> ${DIND_VOLUME_USED_BY_PODS_FILE}
 
 sigterm_trap(){
    echo "${1:-SIGTERM} received at $(date)"
-
+   export SIGTERM=1
    CURRENT_TS=$(date +%s)
    echo ${CURRENT_TS} > ${DIND_VOLUME_LAST_USED_TS_FILE}
 
@@ -52,8 +53,8 @@ sigterm_trap(){
    echo "killing MONITOR_PID ${MONITOR_PID}"
    kill $MONITOR_PID
 
-   echo "killing DOCKER_PID ${DOCKER_PID}"
-   kill $DOCKER_PID
+   echo "killing DOCKERD_PID ${DOCKERD_PID}"
+   kill $DOCKERD_PID
    sleep 2
 
    if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" && -n "${DOCKERD_DATA_ROOT}" ]]; then
@@ -124,23 +125,94 @@ echo "DOCKERD_PARAMS = ${DOCKERD_PARAMS}"
 ${DIR}/monitor/start.sh  <&- &
 MONITOR_PID=$!
 
-### Trying to start docker
-dockerd ${DOCKERD_PARAMS} <&- &
-CNT=0
-while ! test -f /var/run/docker.pid || test -z "$(cat /var/run/docker.pid)" || ! docker ps
+### start docker with retry
+DOCKERD_PID_FILE=/var/run/docker.pid
+DOCKERD_PID_MAXWAIT=${DOCKERD_PID_MAXWAIT:-20}
+DOCKERD_LOCK_MAXWAIT=${DOCKERD_LOCK_MAXWAIT:-60}
+DOCKER_UP_MAXWAIT=${DOCKERD_UP_MAXWAIT:-90}
+while true
 do
-  echo "$(date) - Waiting for docker to start"
-  sleep 2
+  [[ -n "${SIGTERM}" ]] && break
+  echo "Starting docker ..."
+  if [[ -f ${DOCKERD_PID_FILE} ]] || pgrep -l dockerd ; then
+      DOCKERD_PID=$(cat ${DOCKERD_PID_FILE})
+      echo "  Waiting for dockerd pid ${DOCKERD_PID_FILE} to exit ..."
+      CNT=0
+      pkill dockerd 
+      while pgrep -l dockerd
+      do
+        [[ -n "${SIGTERM}" ]] && break 2
+        (( CNT++ ))
+        echo ".... old dockerd is still running - $(date)"
+        if [[ ${CNT} -ge 120 ]]; then
+          echo "Killing old dockerd"
+          pkill -9 dockerd
+          break
+        fi
+        sleep 1
+      done
+      rm -fv ${DOCKERD_PID_FILE}
+  fi
+
+  echo "$(date) - Checking if other dockerd running on same /var/lib/docker by check locks on containerd/daemon/io.containerd.metadata.v1.bolt/meta.db "
+  CONTEINERD_DB=${DOCKERD_DATA_ROOT}/containerd/daemon/io.containerd.metadata.v1.bolt/meta.db
+  if [[ -f ${CONTEINERD_DB} ]]; then
+    echo "Checking if another dockerd is running on same ${DOCKERD_DATA_ROOT} boltdb $CONTEINERD_DB is locked"
+    CNT=0
+    while ! bolter -f ${CONTEINERD_DB}
+    do
+      [[ -n "${SIGTERM}" ]] && break 2
+      echo "$(date) - Waiting for containerd boltd ${CONTEINERD_DB}"
+      (( CNT++ ))
+      if (( CNT > ${DOCKERD_LOCK_MAXWAIT} )); then
+        echo "  giving up and trying to start docker anyway Waited more than ${DOCKERD_LOCK_MAXWAIT}s for containerd boltdb unlock"
+        break
+      fi
+      sleep 1
+    done
+  else 
+    echo "containerd db is not locked"
+  fi
+
+  echo "Starting dockerd"
+  dockerd ${DOCKERD_PARAMS} <&- &
+  echo "Waiting at most 20s for docker pid"
+  CNT=0
+  while ! test -f "${DOCKERD_PID_FILE}" || test -z "$(cat ${DOCKERD_PID_FILE})"
+  do
+    [[ -n "${SIGTERM}" ]] && break 2
+    echo "$(date) - Waiting for docker pid file ${DOCKERD_PID_FILE}"
+    (( CNT++ ))
+    if (( CNT > ${DOCKERD_PID_MAXWAIT} )); then
+      echo "Waited more than ${DOCKERD_PID_MAXWAIT}s for docker pid, retry dockerd start"
+      continue 2
+    fi
+    sleep 1
+  done
+
+  echo "Waiting at most 2m for docker pid"
+  CNT=0
+  while ! docker ps
+  do
+    [[ -n "${SIGTERM}" ]] && break 2
+    echo "$(date) - Waiting for docker running by check docker ps "
+    (( CNT++ ))
+    if (( CNT > ${DOCKER_UP_MAXWAIT} )); then
+      echo "Waited more than ${DOCKER_UP_MAXWAIT}s for dockerd, retry dockerd start"
+      continue 2
+    fi
+    sleep 1
+  done
+  echo "$(date) - dockerd has been started"
+  break
 done
 
-DOCKER_PID=$(cat /var/run/docker.pid)
-echo "DOCKER_PID = ${DOCKER_PID} "
-
 # Starting cleaner agent
-if [[ -z "${DISABLE_CLEANER_AGENT}" ]]; then
+if [[ -z "${DISABLE_CLEANER_AGENT}" && -z "${SIGTERM}" ]]; then
   ${DIR}/cleaner/cleaner-agent.sh  <&- &
   CLEANER_AGENT_PID=$!
 fi
 
-wait ${DOCKER_PID}
-
+DOCKERD_PID=$(cat /var/run/docker.pid)
+echo "DOCKERD_PID = ${DOCKERD_PID} "
+wait ${DOCKERD_PID}
