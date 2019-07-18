@@ -176,8 +176,15 @@ clean_images(){
      done
   fi
 
+  # Added preserved images
+  PRESERVED_IMAGES_FILE=${DIR}/preserved-images
+  if [[ -f "${PRESERVED_IMAGES_FILE}" ]]; then
+    cat ${PRESERVED_IMAGES_FILE} | while read image_name
+    do
+      echo "preserving image $image_name "
+      docker images ${image_name} -q --no-trunc >> "${RETAINED_IMAGES_FILE}"
+    done
+  fi
+
   dind-cleaner images --retained-images-file ${RETAINED_IMAGES_FILE} --image-retain-period ${IMAGE_RETAIN_PERIOD}
 }
-
-
-
