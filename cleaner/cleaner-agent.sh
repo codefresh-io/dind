@@ -99,6 +99,8 @@ do
     (( CLEANER_AGENT_ACTIONS_PURGES ++ ))
     echo "$0: CLEANER_AGENT_ACTIONS_PURGES=$CLEANER_AGENT_ACTIONS_PURGES, updating metric file ${CLEANER_AGENT_ACTIONS_PURGES_FILE}"
     echo $CLEANER_AGENT_ACTIONS_PURGES > ${CLEANER_AGENT_ACTIONS_PURGES_FILE}
+    echo "docker pull pulling codefresh/fs-ops"
+    docker pull codefresh/fs-ops
     unlock_file
     display_df
   fi

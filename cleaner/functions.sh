@@ -41,12 +41,12 @@ display_df(){
 
 check_disk_usage_threshold(){
   local THRESHOLD=${1:-${DISK_USAGE_THRESHOLD}}
-  df ${DOCKERD_DATA_ROOT} | awk -v T=${THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
+  df -P ${DOCKERD_DATA_ROOT} | awk -v T=${THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
 }
 
 check_inodes_usage_threshold(){
   local THRESHOLD=${1:-${DISK_USAGE_THRESHOLD}}
-   df -i ${DOCKERD_DATA_ROOT} | awk -v T=${THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
+   df -iP ${DOCKERD_DATA_ROOT} | awk -v T=${THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
 }
 
 clean_temporary_objects(){
@@ -176,8 +176,15 @@ clean_images(){
      done
   fi
 
+  # Added preserved images
+  PRESERVED_IMAGES_FILE=${DIR}/preserved-images
+  if [[ -f "${PRESERVED_IMAGES_FILE}" ]]; then
+    cat ${PRESERVED_IMAGES_FILE} | while read image_name
+    do
+      echo "preserving image $image_name "
+      docker images ${image_name} -q --no-trunc >> "${RETAINED_IMAGES_FILE}"
+    done
+  fi
+
   dind-cleaner images --retained-images-file ${RETAINED_IMAGES_FILE} --image-retain-period ${IMAGE_RETAIN_PERIOD}
 }
-
-
-
