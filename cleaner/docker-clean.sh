@@ -86,11 +86,11 @@ else
 fi
 
 check_disk_usage_threshold(){
-   df ${DOCKERD_DATA_ROOT} | awk -v T=${DISK_USAGE_THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
+   df -P ${DOCKERD_DATA_ROOT} | awk -v T=${DISK_USAGE_THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
 }
 
 check_inodes_usage_threshold(){
-   df -i ${DOCKERD_DATA_ROOT} | awk -v T=${INODES_USAGE_THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
+   df -iP ${DOCKERD_DATA_ROOT} | awk -v T=${INODES_USAGE_THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
 }
 
 echo -e "\nChecking if  need to clean by current disk usage - DISK_USAGE_THRESHOLD = ${DISK_USAGE_THRESHOLD}"

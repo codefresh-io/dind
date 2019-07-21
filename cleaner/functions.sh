@@ -41,12 +41,12 @@ display_df(){
 
 check_disk_usage_threshold(){
   local THRESHOLD=${1:-${DISK_USAGE_THRESHOLD}}
-  df ${DOCKERD_DATA_ROOT} | awk -v T=${THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
+  df -P ${DOCKERD_DATA_ROOT} | awk -v T=${THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
 }
 
 check_inodes_usage_threshold(){
   local THRESHOLD=${1:-${DISK_USAGE_THRESHOLD}}
-   df -i ${DOCKERD_DATA_ROOT} | awk -v T=${THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
+   df -iP ${DOCKERD_DATA_ROOT} | awk -v T=${THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
 }
 
 clean_temporary_objects(){
