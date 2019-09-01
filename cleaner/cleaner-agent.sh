@@ -95,8 +95,8 @@ do
     echo "$0: CLEANER_AGENT: NEEED TO PURGE - purging all images created more than 3h ago"
     display_df
     lock_file
-    docker image prune -a --force --filter "until=3h"
-    (( CLEANER_AGENT_ACTIONS_PURGES ++ ))
+    docker image prune -a --force --filter "until=3h" --filter "label!=io.codefresh.repo.name=images"
+     (( CLEANER_AGENT_ACTIONS_PURGES ++ ))
     echo "$0: CLEANER_AGENT_ACTIONS_PURGES=$CLEANER_AGENT_ACTIONS_PURGES, updating metric file ${CLEANER_AGENT_ACTIONS_PURGES_FILE}"
     echo $CLEANER_AGENT_ACTIONS_PURGES > ${CLEANER_AGENT_ACTIONS_PURGES_FILE}
     echo "docker pull pulling codefresh/fs-ops"
