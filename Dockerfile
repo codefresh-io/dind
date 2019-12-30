@@ -8,7 +8,8 @@ FROM codefresh/bolter AS bolter
 FROM docker:18.09.5-dind
 
 RUN  echo 'http://dl-cdn.alpinelinux.org/alpine/v3.11/main' >> /etc/apk/repositories \
-     && apk add --upgrade musl-utils e2fsprogs openssl bash jq
+     && apk add --upgrade --no-cache musl-utils e2fsprogs-extra openssl bash jq \
+     && rm -rf /var/cache/apk/*
 
 COPY --from=node-exporter /bin/node_exporter /bin/
 COPY --from=dind-cleaner /usr/local/bin/dind-cleaner /bin/
