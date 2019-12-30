@@ -9,3 +9,13 @@ steps:
     type: push
     candidate: ${{build-step}}
     tag: ${{CF_BRANCH}}
+
+  push to dockerhub:
+    type: push
+    candidate: ${{build-step}}
+    tag: ${{CF_BRANCH}}
+    registry: dockerhub
+    when:
+      branch:
+        only:
+          - security-update-saas-4838
