@@ -7,7 +7,8 @@ FROM codefresh/bolter AS bolter
 
 FROM docker:18.09.5-dind
 
-RUN apk upgrade \
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.11/main' >> /etc/apk/repositories \
+  && apk upgrade \
   && apk add bash jq --no-cache \
   && rm -rf /var/cache/apk/*
 
