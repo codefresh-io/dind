@@ -5,7 +5,7 @@ FROM codefresh/dind-cleaner:v1.1 AS dind-cleaner
 
 FROM codefresh/bolter AS bolter
 
-FROM docker:18.09.9-dind
+FROM docker:18.09.5-dind
 
 RUN apk upgrade \
   && apk add bash jq --no-cache \
