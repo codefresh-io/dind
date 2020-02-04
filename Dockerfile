@@ -1,3 +1,5 @@
+ARG DOCKER_VERSION=18.09.5
+
 FROM quay.io/prometheus/node-exporter:v0.15.1 AS node-exporter
 # install node-exporter
 
@@ -5,7 +7,7 @@ FROM codefresh/dind-cleaner:v1.1 AS dind-cleaner
 
 FROM codefresh/bolter AS bolter
 
-FROM docker:18.09.5-dind
+FROM docker:${DOCKER_VERSION}-dind
 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.11/main' >> /etc/apk/repositories \
   && apk upgrade \

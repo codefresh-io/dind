@@ -1,17 +1,100 @@
-version: '1.0'
-
+version: "1.0"
+stages:
+  - clone
+  - prepare
+  - build
+  - release
 steps:
-  build-step:
+
+  main_clone:
+    title: 'Cloning main repository...'
+    stage: clone
+    type: git-clone
+    repo: ${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}
+    revision: ${{CF_BRANCH}}
+    git: ${{GIT_CONTEXT}}
+
+  prepare_env_vars:
+    title: 'Preparing environment variables...'
+    stage: prepare
+    image: codefreshio/ci-helpers
+    working_directory: ${{main_clone}}
+    commands:
+      - cf_export DOCKER_VERSION=18.09.5
+      - cf_export SERVICE_VERSION=$(yq r service.yaml version)
+      - cf_export IMAGE_NAME=codefresh/dind
+
+  validate_version:
+    title: 'Validating the service version...'
+    stage: prepare
+    image: codefreshio/ci-helpers
+    fail_fast: false
+    commands:
+    - |
+      err() { echo -e "\e[31m$@\e[0m" ; return 1 ; }
+      ok() { echo -e "\e[32m$@\e[0m" ; return 0 ; }
+
+      current_version=${SERVICE_VERSION}
+      last_version=$(git describe --abbrev=0 --tags)
+      echo "Current version is $current_version, last version - $last_version"
+      semver-cli greater $current_version $last_version && ok "Version check ok" || err "Please the update the version in the service.yaml file"
+
+  build_image:
+    title: "Building the image..."
+    stage: build
     type: build
-    image-name: codefresh/dind
+    working_directory: ${{main_clone}}
+    build_arguments:
+      - DOCKER_VERSION=${{DOCKER_VERSION}}
+    dockerfile: ./Dockerfile
+    image_name: ${{IMAGE_NAME}}
+    tag: ${{CF_BRANCH_TAG_NORMALIZED}}
 
-  push to registry:
-    type: push
-    candidate: ${{build-step}}
-    tag: ${{CF_BRANCH}}
+  approve_existing_version_update:
+    type: pending-approval
+    stage: release
+    title: "Are you sure you want to update already existing image version?"
+    description: |
+      "Used for reverting changes without raising the service version"
+    when:
+      branch:
+        only: [master]
+      steps:
+       - name: validate_version
+         on:
+           - failure
 
-  push to dockerhub:
-    type: push
-    candidate: ${{build-step}}
-    tag: ${{CF_BRANCH}}
-    registry: dockerhub
+  release:
+    type: parallel
+    stage: release
+    steps:
+
+      add_git_tag:
+          title: "Adding Git tag..."
+          stage: release
+          image: codefreshio/ci-helpers
+          commands:
+            - source /get-token/get-gh-token.sh
+            - |
+              curl --fail -X POST -d '{"ref": "refs/tags/${{SERVICE_VERSION}}","sha": "${{CF_REVISION}}"}' -H "Content-Type: application/json" -H "Authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}/git/refs
+          when:
+            branch:
+              only: [master]
+            steps:
+             - name: validate_version
+               on:
+                 - success
+                 
+      push_image_prod:
+        type: push
+        title: "Pushing the image to the public registry..."
+        stage: release
+        image_name: '${{IMAGE_NAME}}'
+        registry: "${{REGISTRY_INTEGRATION}}"
+        candidate: "${{build_image}}"
+        tags:
+          - "${{DOCKER_VERSION}}-v${{SERVICE_VERSION}}"
+          - "latest"
+        when:
+          branch:
+            only: [master]
