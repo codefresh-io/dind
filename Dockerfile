@@ -8,7 +8,12 @@ FROM codefresh/dind-cleaner:v1.1 AS dind-cleaner
 FROM codefresh/bolter AS bolter
 
 FROM docker:${DOCKER_VERSION}-dind
-RUN apk add bash jq --no-cache
+
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.11/main' >> /etc/apk/repositories \
+  && apk upgrade \
+  && apk add bash jq --no-cache \
+  && rm -rf /var/cache/apk/*
+
 COPY --from=node-exporter /bin/node_exporter /bin/
 COPY --from=dind-cleaner /usr/local/bin/dind-cleaner /bin/
 COPY --from=bolter /go/bin/bolter /bin/
