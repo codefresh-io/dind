@@ -8,7 +8,7 @@ echo "Starting node_exporter at $(date):
    TEXTFILE_DIRECTORY = ${TEXTFILE_DIRECTORY}
 "
 
-DISABLED_COLLECTORS=(arp bcache bonding buddyinfo conntrack cpu diskstats drbd edac entropy filefd filesystem gmond hwmon infiniband \
+DISABLED_COLLECTORS=(arp bcache bonding buddyinfo conntrack cpu diskstats drbd edac entropy filefd filesystem hwmon infiniband \
         interrupts ipvs ksmd loadavg logind mdadm megacli meminfo meminfo_numa mountstats netdev netstat nfs ntp qdisc \
         runit sockstat stat supervisord systemd tcpstat time uname vmstat wifi xfs zfs timex )
 
