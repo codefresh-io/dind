@@ -159,7 +159,7 @@ do
   if [[ -f ${CONTEINERD_DB} ]]; then
     echo "Checking if another dockerd is running on same ${DOCKERD_DATA_ROOT} boltdb $CONTEINERD_DB is locked"
     CNT=0
-    while ! bolter -f ${CONTEINERD_DB}
+    while ! bolter --file ${CONTEINERD_DB}
     do
       [[ -n "${SIGTERM}" ]] && break 2
       echo "$(date) - Waiting for containerd boltd ${CONTEINERD_DB}"

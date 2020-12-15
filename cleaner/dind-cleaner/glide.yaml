@@ -1,0 +1,8 @@
+package: github.com/codefresh-io/dind-cleaner
+import:
+- package: github.com/docker/docker
+  version: ~18.06
+  subpackages:
+  - api/types
+  - client
+- package: github.com/golang/glog
