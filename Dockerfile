@@ -37,6 +37,9 @@ COPY --from=node-exporter /bin/node_exporter /bin/
 COPY --from=cleaner /usr/local/bin/dind-cleaner /bin/
 COPY --from=bolter /go/bin/bolter /bin/
 
+RUN apk add curl --no-cache \
+  && rm -rf /var/cache/apk/*
+
 RUN curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64 && \
   chmod +x ./kind && \
   mv ./kind /usr/local/bin/kind
