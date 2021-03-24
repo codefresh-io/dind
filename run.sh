@@ -217,6 +217,6 @@ DOCKERD_PID=$(cat /var/run/docker.pid)
 echo "DOCKERD_PID = ${DOCKERD_PID} "
 
 ## Cleanup previous cluster which can remain in volume cache 
-kind create cluster --name local-kube
+kind create cluster --name local-kube --kubeconfig /codefresh/local-kube
 
 wait ${DOCKERD_PID}
