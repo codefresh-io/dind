@@ -36,6 +36,10 @@ COPY --from=node-exporter /bin/node_exporter /bin/
 COPY --from=cleaner /usr/local/bin/dind-cleaner /bin/
 COPY --from=bolter /go/bin/bolter /bin/
 
+RUN curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64 && \
+  chmod +x ./kind && \
+  mv ./kind /usr/local/bin/kind
+
 WORKDIR /dind
 ADD . /dind
 
