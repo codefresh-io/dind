@@ -1,5 +1,14 @@
 apiVersion: kind.x-k8s.io/v1alpha4
 kind: Cluster
 networking:
-  apiServerAddress: "local-kube"
+  apiServerAddress: "0.0.0.0"
   apiServerPort: 6443
+
+kubeadmConfigPatchesJson6902:
+- group: kubeadm.k8s.io
+  version: v1beta2
+  kind: ClusterConfiguration
+  patch: |
+    - op: add
+      path: /apiServer/certSANs/-
+      value: local-kube
