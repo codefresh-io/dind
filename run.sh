@@ -220,9 +220,12 @@ echo "DOCKERD_PID = ${DOCKERD_PID} "
 kind create cluster --config=/kind.yaml --name local-kube --kubeconfig /codefresh/local-kube/kubeconfig
 docker network connect bridge local-kube-control-plane
 sleep 2
+docker run -d --rm --hostname dns.mageddo -v /var/run/docker.sock:/var/run/docker.sock -v /etc/resolv.conf:/etc/resolv.conf defreitas/dns-proxy-server
 KIND_ADDRESS=$(docker inspect --format '{{ .NetworkSettings.Networks.bridge.IPAddress }}' local-kube-control-plane)
 #sed -i -e "s/0.0.0.0/${KIND_ADDRESS}/g" /codefresh/local-kube/kubeconfig
-sed -i -e "s/0.0.0.0/local-kube/g" /codefresh/local-kube/kubeconfig
-echo "${KIND_ADDRESS}    local-kube" >> /etc/hosts
+#sed -i -e "s/0.0.0.0/local-kube/g" /codefresh/local-kube/kubeconfig
+#echo "${KIND_ADDRESS}    local-kube" >> /etc/hosts
+sed -i -e "s/0.0.0.0/local-kube-control-plane/g" /codefresh/local-kube/kubeconfig
+
 
 wait ${DOCKERD_PID}
