@@ -3,12 +3,14 @@ kind: Cluster
 networking:
   apiServerAddress: "0.0.0.0"
   apiServerPort: 6443
-
-kubeadmConfigPatchesJson6902:
-- group: kubeadm.k8s.io
-  version: v1beta2
-  kind: ClusterConfiguration
-  patch: |
-    - op: add
-      path: /apiServer/certSANs/-
-      value: local-kube
+nodes:
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    group: kubeadm.k8s.io
+    version: v1beta2
+    kind: ClusterConfiguration
+    patch: |
+      - op: add
+        path: /apiServer/certSANs/-
+        value: local-kube
