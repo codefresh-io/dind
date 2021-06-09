@@ -20,7 +20,7 @@ steps:
     image: codefreshio/ci-helpers
     working_directory: ${{main_clone}}
     commands:
-      - cf_export DOCKER_VERSION=18.09.5
+      - cf_export DOCKER_VERSION=20.10.7
       - cf_export SERVICE_VERSION=$(yq r service.yaml version)
       - cf_export IMAGE_NAME=codefresh/dind
 
