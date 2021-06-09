@@ -2,7 +2,7 @@ ARG DOCKER_VERSION=18.09.5
 
 # dind-cleaner
 FROM golang:1.9.2 AS cleaner
-RUN curl https://glide.sh/get | sh
+RUN curl https://raw.githubusercontent.com/Masterminds/glide.sh/master/get | sh
 
 COPY cleaner/dind-cleaner/glide* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
