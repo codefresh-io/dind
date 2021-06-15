@@ -1,4 +1,4 @@
-ARG DOCKER_VERSION=18.09.5
+ARG DOCKER_VERSION=20.10.4
 
 # dind-cleaner
 FROM golang:1.9.2 AS cleaner
@@ -17,7 +17,7 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd && \
     rm -rf /go/*
 
 # bolter
-FROM golang:1.12.6-alpine3.9 AS bolter
+FROM golang:1.16-alpine3.13 AS bolter
 RUN apk add git
 RUN go get -u github.com/hasit/bolter
 
