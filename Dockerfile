@@ -1,3 +1,5 @@
+ARG DOCKER_VERSION=18.09.5
+
 FROM quay.io/prometheus/node-exporter:v0.15.1 AS node-exporter
 # install node-exporter
 
