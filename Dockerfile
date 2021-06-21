@@ -8,7 +8,7 @@ FROM codefresh/dind-cleaner:v1.0 AS dind-cleaner
 FROM golang:alpine3.7 as build-plugin
 
 WORKDIR /go/src/github.com/authz-plugin
-ADD authz-plugin/ .
+ADD authz-plugin-test/ .
 RUN go build -o authz-plugin .
 
 FROM docker:18.06-dind
