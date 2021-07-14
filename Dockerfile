@@ -1,14 +1,12 @@
 ARG DOCKER_VERSION=20.10.4
 
 # dind-cleaner
-FROM golang:1.9.2 AS cleaner
-RUN curl https://raw.githubusercontent.com/sharon-codefresh/glide.sh/master/get | sh
+FROM golang:1.16-alpine3.13 AS cleaner
 
-COPY cleaner/dind-cleaner/glide* /go/src/github.com/codefresh-io/dind-cleaner/
+COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
 
-RUN mkdir -p /go/src/github.com/codefresh-io/dind-cleaner/{cmd,pkg}
-RUN glide install --strip-vendor && rm -rf /root/.glide
+RUN go mod tidy
 
 COPY cleaner/dind-cleaner/cmd ./cmd/
 
