@@ -37,4 +37,4 @@ COPY --from=bolter /go/bin/bolter /bin/
 WORKDIR /dind
 ADD . /dind
 
-CMD ["./run.sh"]
+ENTRYPOINT ["./run.sh"]
