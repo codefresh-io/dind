@@ -1,7 +1,7 @@
 ARG DOCKER_VERSION=20.10.13
 
 # dind-cleaner
-FROM golang:1.16-alpine3.13 AS cleaner
+FROM golang:1.16-alpine3.15 AS cleaner
 
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
@@ -15,7 +15,7 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd && \
     rm -rf /go/*
 
 # bolter
-FROM golang:1.16-alpine3.13 AS bolter
+FROM golang:1.16-alpine3.15 AS bolter
 RUN apk add git
 RUN go get -u github.com/hasit/bolter
 
