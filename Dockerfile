@@ -36,7 +36,9 @@ COPY --from=bolter /go/bin/bolter /bin/
 WORKDIR /dind
 ADD . /dind
 
-RUN adduser -D -h /home/cfu -s /bin/bash cfu
+RUN adduser -D -h /home/cfu -s /bin/bash cfu \
+    && chgrp -R $(id -g cfu) /dind /root \
+    && chmod -R g+rwX /dind /root
 
 USER cfu
 
