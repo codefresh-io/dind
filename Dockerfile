@@ -36,4 +36,8 @@ COPY --from=bolter /go/bin/bolter /bin/
 WORKDIR /dind
 ADD . /dind
 
+RUN adduser -D -h /home/cfu -s /bin/bash cfu
+
+USER cfu
+
 ENTRYPOINT ["./run.sh"]
