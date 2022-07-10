@@ -38,8 +38,8 @@ WORKDIR /dind
 ADD . /dind
 
 RUN adduser -D -h /home/cfu -s /bin/bash cfu \
-    && chgrp -R $(id -g cfu) /dind /var /etc /root \
-    && chmod -R g+rwX /dind /var /etc /root
+    && chgrp -R $(id -g cfu) /dind /var /root \
+    && chmod -R g+rwX /dind /var /root
 
 USER cfu
 
