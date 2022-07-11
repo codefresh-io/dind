@@ -37,11 +37,10 @@ WORKDIR /dind
 ADD . /dind
 
 RUN adduser -D -h /home/cfu -s /bin/bash cfu \
-    && chgrp $(id -g cfu) /etc \
-    && chmod g+rw /etc \
-    && chgrp -R $(id -g cfu) /dind /var /root \
-    && chmod -R g+rwX /var /root /dind
+    && chown -R $(id -g cfu) /var /run /lib /dind  \
+    && chgrp -R $(id -g cfu) /var /run /lib /dind \
+    && chmod -R g+rwX /var /run /lib /dind
 
-USER cfu
+RUN chown -R $(id -g cfu) /etc/ssl && chmod -R g+r /etc/ssl 
 
 ENTRYPOINT ["./run.sh"]
