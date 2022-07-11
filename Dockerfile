@@ -39,8 +39,8 @@ ADD . /dind
 RUN adduser -D -h /home/cfu -s /bin/bash cfu \
     && chgrp -R $(id -g cfu) /dind /var /root \
     && chgrp $(id -g cfu) /etc \
-    && chmod g+rw /etc \
-    && chmod -R g+rwX /dind /var /root
+    && chmod $(id -g cfu) g+rw /etc \
+    && chmod -R $(id -g cfu) g+rwX /dind /var/root
 
 USER cfu
 
