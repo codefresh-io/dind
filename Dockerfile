@@ -37,10 +37,10 @@ WORKDIR /dind
 ADD . /dind
 
 RUN adduser -D -h /home/cfu -s /bin/bash cfu \
-    && chgrp -R $(id -g cfu) /dind /var /root \
     && chgrp $(id -g cfu) /etc \
-    && chmod $(id -g cfu) g+rw /etc \
-    && chmod -R $(id -g cfu) g+rwX /dind /var/root
+    && chmod g+rw /etc \
+    && chgrp -R $(id -g cfu) /dind /var /root \
+    && chmod -R g+rwX /var /root /dind
 
 USER cfu
 
