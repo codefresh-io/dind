@@ -179,7 +179,7 @@ do
 
   echo "Starting dockerd"
   #dockerd ${DOCKERD_PARAMS} <&- &
-  ${DIR}/cf-dockerd-entrypoint.sh ${DOCKERD_PARAMS}
+  ${DIR}/cf-dockerd-entrypoint.sh dockerd ${DOCKERD_PARAMS}
   echo "Waiting at most 20s for docker pid"
   CNT=0
   while ! test -f "${DOCKERD_PID_FILE}" || test -z "$(cat ${DOCKERD_PID_FILE})"
