@@ -98,7 +98,7 @@ clean_networks(){
 
 clean_volumes(){
   echo -e "\n############# Cleaning Volumes ############# - $(date) "
-  # Listing directories in /var/lib/docker/volumes and delete volume if its folder mtime>VOLUMES_RETAIN_PERIOD
+  # Listing directories in /home/rootless/.local/share/docker/volumes and delete volume if its folder mtime>VOLUMES_RETAIN_PERIOD
   if [[ -n "${CLEANER_DRY_RUN}" ]]; then
      echo "Running in DRY_RUN, just display rm commands"
   fi

@@ -26,7 +26,7 @@ INODES_USAGE_THRESHOLD=${INODES_USAGE_THRESHOLD}
 "
 
 #### Defining DIND_VOLUME_STAT dir and stat files
-DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/var/lib/docker}
+DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/home/rootless/.local/share/docker}
 DIND_VOLUME_STAT_DIR=${DIND_VOLUME_STAT_DIR:-${DOCKERD_DATA_ROOT}/dind-volume}
 mkdir -p ${DIND_VOLUME_STAT_DIR}
 
@@ -157,7 +157,7 @@ clean_networks(){
 
 clean_volumes(){
   echo -e "\n############# Cleaning Volumes ############# - $(date) "
-  # Listing directories in /var/lib/docker/volumes and delete volume if its folder mtime>VOLUMES_RETAIN_PERIOD
+  # Listing directories in /home/rootless/.local/share/docker/volumes and delete volume if its folder mtime>VOLUMES_RETAIN_PERIOD
   if [[ -n "${CLEANER_DRY_RUN}" ]]; then
      echo "Running in DRY_RUN, just display rm commands"
   fi

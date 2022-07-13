@@ -3,7 +3,7 @@
 DIR=$(dirname $0)
 
 echo "Entering $0 at $(date) "
-DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/var/lib/docker}
+DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/home/rootless/.local/share/docker}
 DIND_VOLUME_STAT_DIR=${DIND_VOLUME_STAT_DIR:-${DOCKERD_DATA_ROOT}/dind-volume}
 DIND_VOLUME_CREATED_TS_FILE=${DIND_VOLUME_STAT_DIR}/created
 DIND_VOLUME_LAST_USED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_used
@@ -71,7 +71,7 @@ sigterm_trap(){
 trap sigterm_trap SIGTERM SIGINT
 
 # Starting run daemon
-rm -fv /var/run/docker.pid
+rm -fv /run/user/1000/docker.pid
 mkdir -p /var/run/codefresh
 
 # Setup Client certificate ca
@@ -82,16 +82,16 @@ if [[ -n "${CODEFRESH_CLIENT_CA_DATA}" ]]; then
 fi
 
 # creating daemon json
-if [[ ! -f /etc/docker/daemon.json ]]; then
+if [[ ! -f ~/.config/docker/daemon.json ]]; then
   DAEMON_JSON=${DAEMON_JSON:-default-daemon.json}
-  mkdir -p /etc/docker
-  cp -v ${DIR}/docker/${DAEMON_JSON} /etc/docker/daemon.json
+  mkdir -p ~/.config/docker
+  cp -v ${DIR}/docker/${DAEMON_JSON} ~/.config/docker/daemon.json
 fi
-echo "$(date) - Starting dockerd with /etc/docker/daemon.json: "
-cat /etc/docker/daemon.json
+echo "$(date) - Starting dockerd with ~/.config/docker/daemon.json: "
+cat ~/.config/docker/daemon.json
 
 # Docker registry self-signed Certs - workaround for problem where kubernetes cannot mount 
-for cc in $(find /etc/docker/certs.d -type d -maxdepth 1)
+for cc in $(find ~/.config/docker/certs.d -type d -maxdepth 1)
 do
   echo "Trying to process Registery Self-Signed certs dir $cc "
   ls -l "${cc}"
@@ -128,7 +128,8 @@ ${DIR}/monitor/start.sh  <&- &
 MONITOR_PID=$!
 
 ### start docker with retry
-DOCKERD_PID_FILE=/var/run/docker.pid
+#DOCKERD_PID_FILE=/var/run/docker.pid
+DOCKERD_PID_FILE=/run/user/1000/docker.pid
 DOCKERD_PID_MAXWAIT=${DOCKERD_PID_MAXWAIT:-20}
 DOCKERD_LOCK_MAXWAIT=${DOCKERD_LOCK_MAXWAIT:-60}
 DOCKER_UP_MAXWAIT=${DOCKERD_UP_MAXWAIT:-90}
@@ -156,7 +157,7 @@ do
       rm -fv ${DOCKERD_PID_FILE}
   fi
 
-  echo "$(date) - Checking if other dockerd running on same /var/lib/docker by check locks on containerd/daemon/io.containerd.metadata.v1.bolt/meta.db "
+  echo "$(date) - Checking if other dockerd running on same /home/rootless/.local/share/docker by check locks on containerd/daemon/io.containerd.metadata.v1.bolt/meta.db "
   CONTEINERD_DB=${DOCKERD_DATA_ROOT}/containerd/daemon/io.containerd.metadata.v1.bolt/meta.db
   if [[ -f ${CONTEINERD_DB} ]]; then
     echo "Checking if another dockerd is running on same ${DOCKERD_DATA_ROOT} boltdb $CONTEINERD_DB is locked"
@@ -177,7 +178,8 @@ do
   fi
 
   echo "Starting dockerd"
-  dockerd ${DOCKERD_PARAMS} <&- &
+  #dockerd ${DOCKERD_PARAMS} <&- &
+  ${DIR}/cf-dockerd-entrypoint.sh ${DOCKERD_PARAMS}
   echo "Waiting at most 20s for docker pid"
   CNT=0
   while ! test -f "${DOCKERD_PID_FILE}" || test -z "$(cat ${DOCKERD_PID_FILE})"
@@ -215,6 +217,6 @@ if [[ -z "${DISABLE_CLEANER_AGENT}" && -z "${SIGTERM}" ]]; then
   CLEANER_AGENT_PID=$!
 fi
 
-DOCKERD_PID=$(cat /var/run/docker.pid)
+DOCKERD_PID=$(cat /run/user/1000/docker.pid)
 echo "DOCKERD_PID = ${DOCKERD_PID} "
 wait ${DOCKERD_PID}
