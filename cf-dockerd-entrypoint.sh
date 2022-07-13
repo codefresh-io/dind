@@ -117,7 +117,7 @@ if [ "$#" -eq 0 ] || [ "${1#-}" != "$1" ]; then
 		# generate certs and use TLS if requested/possible (default in 19.03+)
 		set -- dockerd \
 			"$@"
-		DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="${DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS:-} -p 0.0.0.0:2376:2376/tcp"
+		DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="${DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS:-} -p 0.0.0.0:1300:1300/tcp"
 	else
 		# TLS disabled (-e DOCKER_TLS_CERTDIR='') or missing certs
 		set -- dockerd \
