@@ -91,18 +91,18 @@ echo "$(date) - Starting dockerd with ~/.config/docker/daemon.json: "
 cat ~/.config/docker/daemon.json
 
 # Docker registry self-signed Certs - workaround for problem where kubernetes cannot mount 
-for cc in $(find ~/.config/docker/certs.d -type d -maxdepth 1)
-do
-  echo "Trying to process Registery Self-Signed certs dir $cc "
-  ls -l "${cc}"
-  NEW_CERTS_DIR=$(echo $cc | sed -E 's/(.*)_([0-9]+)/\1\:\2/g')
+# for cc in $(find ~/.config/docker/certs.d -type d -maxdepth 1)
+# do
+#   echo "Trying to process Registery Self-Signed certs dir $cc "
+#   ls -l "${cc}"
+#   NEW_CERTS_DIR=$(echo $cc | sed -E 's/(.*)_([0-9]+)/\1\:\2/g')
 
-  if [[ "${cc}" != "${NEW_CERTS_DIR}" ]]; then
-    echo "Creating Registry Registery Self-Signed certs dir ${NEW_CERTS_DIR}"
-    mkdir -pv "${NEW_CERTS_DIR}"
-    cp -vrfL "${cc}"/{ca.crt,client.key,client.cert} "${NEW_CERTS_DIR}"/
-  fi
-done
+#   if [[ "${cc}" != "${NEW_CERTS_DIR}" ]]; then
+#     echo "Creating Registry Registery Self-Signed certs dir ${NEW_CERTS_DIR}"
+#     mkdir -pv "${NEW_CERTS_DIR}"
+#     cp -vrfL "${cc}"/{ca.crt,client.key,client.cert} "${NEW_CERTS_DIR}"/
+#   fi
+# done
 
 #DOCKERD_PARAMS=""
 if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" ]]; then

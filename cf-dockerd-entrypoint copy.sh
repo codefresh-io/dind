@@ -116,19 +116,11 @@ if [ "$#" -eq 0 ] || [ "${1#-}" != "$1" ]; then
 	; then
 		# generate certs and use TLS if requested/possible (default in 19.03+)
 		set -- dockerd \
-			--host="$dockerSocket" \
-			--host=tcp://0.0.0.0:2376 \
-			--tlsverify \
-			--tlscacert "$DOCKER_TLS_CERTDIR/server/ca.pem" \
-			--tlscert "$DOCKER_TLS_CERTDIR/server/cert.pem" \
-			--tlskey "$DOCKER_TLS_CERTDIR/server/key.pem" \
 			"$@"
-		DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="${DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS:-} -p 0.0.0.0:2376:2376/tcp"
+		DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="${DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS:-} -p 0.0.0.0:1300:1300/tcp"
 	else
 		# TLS disabled (-e DOCKER_TLS_CERTDIR='') or missing certs
 		set -- dockerd \
-			--host="$dockerSocket" \
-			--host=tcp://0.0.0.0:2375 \
 			"$@"
 		DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="${DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS:-} -p 0.0.0.0:2375:2375/tcp"
 	fi
@@ -176,8 +168,6 @@ if [ "$1" = 'dockerd' ]; then
 			echo >&2 "error: attempting to run rootless dockerd but need 'user.max_user_namespaces' (/proc/sys/user/max_user_namespaces) set to a sufficiently large value"
 			exit 1
 		fi
-
-		DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="${DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS:-} -p 0.0.0.0:1300:1300/tcp"
 		# TODO overlay support detection?
 		exec rootlesskit \
 			--net="${DOCKERD_ROOTLESS_ROOTLESSKIT_NET:-vpnkit}" \
