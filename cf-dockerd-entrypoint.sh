@@ -176,6 +176,7 @@ if [ "$1" = 'dockerd' ]; then
 			--port-driver=builtin \
 			--copy-up=/etc \
 			--copy-up=/run \
+			-p 0.0.0.0:1300:1300/tcp \
 			${DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS:-} \
 			"$@"
 	elif [ -x '/usr/local/bin/dind' ]; then
