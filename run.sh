@@ -11,9 +11,7 @@ DIND_VOLUME_USED_BY_PODS_FILE=${DIND_VOLUME_STAT_DIR}/pods
 
 DIND_IMAGES_LIB_DIR=${DIND_IMAGES_LIB_DIR:-"/opt/codefresh/dind/images-libs"}
 
-chown -R $(id -g cfu) '/var/lib/docker'
 
-su cfu
 
 mkdir -p ${DIND_VOLUME_STAT_DIR}
 if [ ! -f ${DIND_VOLUME_STAT_DIR}/created ]; then

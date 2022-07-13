@@ -11,8 +11,8 @@ RUN go mod tidy
 COPY cleaner/dind-cleaner/cmd ./cmd/
 
 RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd && \
-    chmod +x /usr/local/bin/dind-cleaner && \
-    rm -rf /go/*
+  chmod +x /usr/local/bin/dind-cleaner && \
+  rm -rf /go/*
 
 # bolter
 FROM golang:1.16-alpine3.15 AS bolter
@@ -23,7 +23,11 @@ RUN go get -u github.com/hasit/bolter
 FROM quay.io/prometheus/node-exporter:v1.0.0 AS node-exporter
 
 # Main
-FROM docker:${DOCKER_VERSION}-dind
+FROM docker:${DOCKER_VERSION}-dind-rootless
+
+USER root
+
+RUN chown -R $(id -u rootless) /var /run /lib /home /etc/ssl /etc/apk
 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.11/main' >> /etc/apk/repositories \
   && apk upgrade \
@@ -37,11 +41,8 @@ COPY --from=bolter /go/bin/bolter /bin/
 WORKDIR /dind
 ADD . /dind
 
-RUN adduser -D -h /home/cfu -s /bin/bash cfu \
-    && chown -R $(id -g cfu) /var /run /lib /dind  \
-    && chgrp -R $(id -g cfu) /var /run /lib /dind \
-    && chmod -R g+rwX /var /run /lib /dind
+RUN chown -R $(id -u rootless) /dind
 
-RUN chown -R $(id -g cfu) /etc/ssl && chmod -R g+r /etc/ssl 
+USER rootless
 
 ENTRYPOINT ["./run.sh"]
