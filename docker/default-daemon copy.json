@@ -1,6 +1,7 @@
 {
   "hosts": [ "unix:///run/user/1000/docker.sock",
-    "tcp://0.0.0.0:1300"],
+    "tcp://0.0.0.0:2376"],
+  "storage-driver": "overlay2",
   "tlsverify": true,
   "tls": true,
   "tlscacert": "/etc/ssl/cf/ca.pem",
