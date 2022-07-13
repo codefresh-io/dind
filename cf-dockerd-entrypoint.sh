@@ -95,7 +95,7 @@ if [ "$#" -eq 0 ] || [ "${1#-}" != "$1" ]; then
 	# set "dockerSocket" to the default "--host" *unix socket* value (for both standard or rootless)
 	uid="$(id -u)"
 	if [ "$uid" = '0' ]; then
-		dockerSocket='unix:///var/run/docker.sock'
+		dockerSocket='unix:///run/user/1000/docker.sock'
 	else
 		# if we're not root, we must be trying to run rootless
 		: "${XDG_RUNTIME_DIR:=/run/user/$uid}"

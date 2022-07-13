@@ -140,7 +140,6 @@ ${DIR}/monitor/start.sh  <&- &
 MONITOR_PID=$!
 
 ### start docker with retry
-#DOCKERD_PID_FILE=/var/run/docker.pid
 DOCKERD_PID_FILE=/run/user/1000/docker.pid
 DOCKERD_PID_MAXWAIT=${DOCKERD_PID_MAXWAIT:-20}
 DOCKERD_LOCK_MAXWAIT=${DOCKERD_LOCK_MAXWAIT:-60}
@@ -191,7 +190,8 @@ do
 
   echo "Starting dockerd"
   #dockerd ${DOCKERD_PARAMS} <&- &
-  ${DIR}/cf-dockerd-entrypoint.sh dockerd ${DOCKERD_PARAMS}
+  ${DIR}/cf-dockerd-entrypoint.sh dockerd ${DOCKERD_PARAMS} <&- &
+
   echo "Waiting at most 20s for docker pid"
   CNT=0
   while ! test -f "${DOCKERD_PID_FILE}" || test -z "$(cat ${DOCKERD_PID_FILE})"
@@ -206,6 +206,7 @@ do
     sleep 1
   done
 
+  export DOCKER_HOST='unix:///run/user/1000/docker.sock'
   echo "Waiting at most 2m for docker pid"
   CNT=0
   while ! docker ps
