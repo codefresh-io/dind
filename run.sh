@@ -188,9 +188,10 @@ do
     echo "containerd db is not locked"
   fi
 
-  echo "Starting dockerd"
+  echo "Starting dockerd rootless"
   #dockerd ${DOCKERD_PARAMS} <&- &
-  ${DIR}/cf-dockerd-entrypoint.sh dockerd ${DOCKERD_PARAMS} <&- &
+  export DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="-p 0.0.0.0:1300:1300/tcp" # Expose rooltelsskit port
+  dockerd-entrypoint.sh dockerd ${DOCKERD_PARAMS} <&- &
 
   echo "Waiting at most 20s for docker pid"
   CNT=0

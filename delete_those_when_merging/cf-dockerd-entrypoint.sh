@@ -177,7 +177,7 @@ if [ "$1" = 'dockerd' ]; then
 			exit 1
 		fi
 
-		DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="${DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS:-} -p 0.0.0.0:1300:1300/tcp"
+		DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="-p 0.0.0.0:1300:1300/tcp"
 		# TODO overlay support detection?
 		exec rootlesskit \
 			--net="${DOCKERD_ROOTLESS_ROOTLESSKIT_NET:-vpnkit}" \
