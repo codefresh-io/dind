@@ -90,7 +90,7 @@ fi
 echo "$(date) - Starting dockerd with ~/.config/docker/daemon.json: "
 cat ~/.config/docker/daemon.json
 
-# Docker registry self-signed Certs - workaround for problem where kubernetes cannot mount 
+# Docker registry self-signed Certs - workaround for problem where kubernetes cannot mount    # Not sure if this block is still needed. This directory doesn't exist in any of our running dinds. Comment out for now.
 # for cc in $(find ~/.config/docker/certs.d -type d -maxdepth 1)
 # do
 #   echo "Trying to process Registery Self-Signed certs dir $cc "
@@ -221,5 +221,12 @@ fi
 
 DOCKERD_PID=$(cat /run/user/1000/docker.pid)
 echo "DOCKERD_PID = ${DOCKERD_PID} "
-##wait $(pidof rootlesskit)
-while true; do sleep 1; done
+
+while true; do
+  # Monitor docker daemon and kill the entrypoint if it dies - before rootless this used to do wait $DOCKERD_PID - but in rootless the daemon is not a direct child of the entrypoint - that's why we need this block
+  if [ ! -d "/proc/$DOCKERD_PID" ]; then
+      echo "Docker daemon no longer running, Exitting"
+      exit 1
+  fi
+  sleep 1;
+done
