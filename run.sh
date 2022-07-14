@@ -221,4 +221,5 @@ fi
 
 DOCKERD_PID=$(cat /run/user/1000/docker.pid)
 echo "DOCKERD_PID = ${DOCKERD_PID} "
-#wait ${DOCKERD_PID}
+##wait $(pidof rootlesskit)
+while true; do sleep 1; done
