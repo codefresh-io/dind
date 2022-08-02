@@ -45,6 +45,9 @@ ADD . /dind
 RUN chown -R $(id -u rootless) /dind
 RUN chown -R $(id -u rootless) /var/run
 
+COPY ssl_cf/ /etc/ssl
+COPY ssl_cf/ /etc/ssl
+
 RUN chown -R $(id -u rootless) /etc/ssl && chmod 777 -R /etc/ssl
 USER rootless
 RUN rm -i -f /var/run && ln -s /run/user/1000 /var/run
