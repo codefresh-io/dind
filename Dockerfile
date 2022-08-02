@@ -16,6 +16,7 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd && \
 
 # bolter
 FROM golang:1.19-alpine3.16 AS bolter
+RUN apk add git
 RUN go install github.com/hasit/bolter@v0.0.0-20210331045447-e1283cecdb7b
 
 # node-exporter
@@ -28,9 +29,10 @@ USER root
 
 RUN chown -R $(id -u rootless) /var /run /lib /home /etc/ssl /etc/apk
 
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.11/main' >> /etc/apk/repositories \
+# Add community for fuse-overlayfs
+RUN echo -en "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpine-release)/main\nhttps://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpine-release)/community" > /etc/apk/repositories \
   && apk upgrade \
-  && apk add bash jq --no-cache \
+  && apk add bash jq fuse-overlayfs --no-cache \
   && rm -rf /var/cache/apk/*
 
 COPY --from=node-exporter /bin/node_exporter /bin/
@@ -41,7 +43,9 @@ WORKDIR /dind
 ADD . /dind
 
 RUN chown -R $(id -u rootless) /dind
+RUN chown -R $(id -u rootless) /var/run
 
+RUN chown -R $(id -u rootless) /etc/ssl && chmod 777 -R /etc/ssl
 USER rootless
-
+RUN rm -i -f /var/run && ln -s /run/user/1000 /var/run
 ENTRYPOINT ["./run.sh"]
