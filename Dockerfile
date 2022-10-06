@@ -1,3 +1,5 @@
+ARG DOCKER_VERSION=20.10.18
+
 # dind-cleaner
 FROM golang:1.16-alpine3.15 AS cleaner
 
@@ -20,7 +22,7 @@ RUN go install github.com/hasit/bolter@v0.0.0-20210331045447-e1283cecdb7b
 FROM quay.io/prometheus/node-exporter:v1.0.0 AS node-exporter
 
 # Main
-FROM docker:20.10-dind
+FROM docker:${DOCKER_VERSION}-dind
 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.11/main' >> /etc/apk/repositories \
   && apk upgrade \
