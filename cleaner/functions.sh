@@ -39,6 +39,14 @@ display_df(){
   echo "---------------------"
 }
 
+write_available_space() {
+  local res=$(df ${DOCKERD_DATA_ROOT} | awk 'NR==2 {print $4}')
+  echo -e "\nAvailable disk space of $DOCKERD_DATA_ROOT at $(date) is: ${res}Kb"
+
+  echo "{\"availableDiskSpaceKb\": ${res}}" > $AVAILABLE_SPACE_KB_FILE
+  echo "---------------------"
+}
+
 check_disk_usage_threshold(){
   local THRESHOLD=${1:-${DISK_USAGE_THRESHOLD}}
   df -P ${DOCKERD_DATA_ROOT} | awk -v T=${THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'

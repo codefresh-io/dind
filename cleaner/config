@@ -17,6 +17,7 @@ LOCK_FILE=/tmp/dind-cleaner.lock
 #### metrics files
 LAST_CLEANED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_cleaned_ts
 LAST_PRUNED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_pruned_ts
+AVAILABLE_SPACE_KB_FILE=/dev/termination-log
 
 CLEANER_AGENT_ACTIONS_CONTAINERS_FILE=${DIND_VOLUME_STAT_DIR}/cleaner_agent_actions_containers
 CLEANER_AGENT_ACTIONS_VOLUMES_FILE=${DIND_VOLUME_STAT_DIR}/cleaner_agent_actions_volumes

@@ -113,6 +113,7 @@ display_df
 clean_temporary_objects
 display_df
 clean_networks
+write_available_space
 
 if [[ -z "${NEED_TO_CLEEN}" ]]; then
   echo "NO need to clean, EXITING: running on new volume or it was cleaned less than ${CLEAN_PERIOD_SECONDS} ago it was cleaned less than ${CLEAN_PERIOD_BUILDS} build ago "
@@ -149,6 +150,7 @@ fi
 
 if [[ -z "${NEED_TO_PRUNE}" ]]; then
   echo "NO need to prune "
+  write_available_space
   exit 0
 else
   echo "executing docker system prune -a --volumes --force"
@@ -163,4 +165,6 @@ else
     echo ${POD_NAME} > "${LAST_PRUNED_POD_FILE}"
   fi
 fi
+
+write_available_space
 unlock_file
