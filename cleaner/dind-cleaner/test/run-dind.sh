@@ -25,8 +25,8 @@ if [[ $? == 0 ]]; then
 fi
 
 docker run -d --privileged -p ${DIND_PORT}:1300 --name $CONTAINER_NAME \
-  -v dind-cleaner-test:/var/lib/docker \
-  -v $(realpath $DIR/dind-config-no-tls.json):/etc/docker/daemon.json \
+  -v dind-cleaner-test:/home/rootless/.local/share/docker \
+  -v $(realpath $DIR/dind-config-no-tls.json):~/.config/docker/daemon.json \
   $DIND_IMAGE $DIND_IMAGE_COMMAND
 
 export DOCKER_HOST=localhost:1300

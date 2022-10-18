@@ -6,7 +6,7 @@ METRIC_FILE=${METRICS_DIR}/dind_metrics.prom
 METRIC_FILE_TMP=${METRIC_FILE}.$$
 
 COLLECT_INTERVAL=15
-DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/var/lib/docker}
+DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/home/rootless/.local/share/docker}
 
 DIND_VOLUME_STAT_DIR=${DIND_VOLUME_STAT_DIR:-${DOCKERD_DATA_ROOT}/dind-volume}
 mkdir -p ${DIND_VOLUME_STAT_DIR}
@@ -67,27 +67,27 @@ docker_up{$LABELS} ${DOCKER_UP}
 docker_containers_count{$LABELS} ${DOCKER_CONTAINERS_COUNT}
 
 # TYPE docker_volume_kb_total gauge
-# HELP docker_volume_kb_total - total size in kb docker volume (/var/lib/docker)
+# HELP docker_volume_kb_total - total size in kb docker volume (/home/rootless/.local/share/docker)
 docker_volume_kb_total{$LABELS} ${DOCKER_VOLUME_KB_TOTAL}
 
 # TYPE docker_volume_kb_available gauge
-# HELP docker_volume_kb_available - available size in kb docker volume (/var/lib/docker)
+# HELP docker_volume_kb_available - available size in kb docker volume (/home/rootless/.local/share/docker)
 docker_volume_kb_available{$LABELS} ${DOCKER_VOLUME_KB_AVAILABLE}
 
 # TYPE docker_volume_kb_usage gauge
-# HELP docker_volume_kb_usage - usage (used/total) of docker volume (/var/lib/docker)
+# HELP docker_volume_kb_usage - usage (used/total) of docker volume (/home/rootless/.local/share/docker)
 docker_volume_kb_usage{$LABELS} ${DOCKER_VOLUME_KB_USAGE}
 
 # TYPE docker_volume_inodes_total gauge
-# HELP docker_volume_inodes_total - total inodes in docker volume (/var/lib/docker)
+# HELP docker_volume_inodes_total - total inodes in docker volume (/home/rootless/.local/share/docker)
 docker_volume_inodes_total{$LABELS} ${DOCKER_VOLUME_INODES_TOTAL}
 
 # TYPE docker_volume_inodes_available gauge
-# HELP docker_volume_inodes_available - available inodes in docker volume (/var/lib/docker)
+# HELP docker_volume_inodes_available - available inodes in docker volume (/home/rootless/.local/share/docker)
 docker_volume_inodes_available{$LABELS} ${DOCKER_VOLUME_INODES_AVAILABLE}
 
 # TYPE docker_volume_inodes_usage gauge
-# HELP docker_volume_inodes_usage - usage (used/total)  of inodes in docker volume (/var/lib/docker)
+# HELP docker_volume_inodes_usage - usage (used/total)  of inodes in docker volume (/home/rootless/.local/share/docker)
 docker_volume_inodes_usage{$LABELS} ${DOCKER_VOLUME_INODES_USAGE}
 
 EOF

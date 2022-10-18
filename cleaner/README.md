@@ -4,10 +4,10 @@ Prunes unneeded containers, images, volumes
 
 We intend to run dind cleaner on every SIGTERM
 
-To determine what to delete we will use information stored in /var/lib/docker/dind-volume 
- - /var/lib/docker/dind-volume/last_cleaned_ts - contains timestamp of last clean (unix timestamp since 1970)
- - /var/lib/docker/dind-volume/last_cleaned_pod - contains pod name of last clean
- - /var/lib/docker/dind-volume/events/  - directory with files of docker events list from previous builds. 
+To determine what to delete we will use information stored in /home/rootless/.local/share/docker/dind-volume 
+ - /home/rootless/.local/share/docker/dind-volume/last_cleaned_ts - contains timestamp of last clean (unix timestamp since 1970)
+ - /home/rootless/.local/share/docker/dind-volume/last_cleaned_pod - contains pod name of last clean
+ - /home/rootless/.local/share/docker/dind-volume/events/  - directory with files of docker events list from previous builds. 
   
 ##### Environent Variables:
   CLEANER_DRY_RUN - do not actually delete - "echo docker rmi" instead of "docker rmi"
@@ -25,7 +25,7 @@ To determine what to delete we will use information stored in /var/lib/docker/di
   VOLUMES_RETAIN_PERIOD=${VOLUMES_RETAIN_PERIOD:-259200}
   
 ##### Logic:
-- save current docker events by `docker events --until 0s -f ${EVENT_FORMAT} > /var/lib/docker/dind-volume/events/$(date +%s)`
+- save current docker events by `docker events --until 0s -f ${EVENT_FORMAT} > /home/rootless/.local/share/docker/dind-volume/events/$(date +%s)`
 - checks last_cleaned_timestamp and exit if: 
   `( current_timestamp - last_cleaned ) < ${CLEAN_PERIOD_SECONDS} and 
    mount_count since last clean < ${CLEAN_PERIOD_BUILDS}
