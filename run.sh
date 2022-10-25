@@ -25,9 +25,9 @@ echo "${POD_NAME} ${CURRENT_TS}" >> ${DIND_VOLUME_USED_BY_PODS_FILE}
 
 write_termination_message() {
   local availableDiskSpaceKb=$(df ${DOCKERD_DATA_ROOT} | awk 'NR==2 {print $4}')
-  echo -e "\nAvailable disk space of $DOCKERD_DATA_ROOT at $(date) is: ${res}Kb"
+  echo -e "\nAvailable disk space of $DOCKERD_DATA_ROOT at $(date) is: ${availableDiskSpaceKb}KiB"
 
-  echo "{\"availableDiskSpaceKb\": ${res}}" > /dev/termination-log
+  echo "{\"availableDiskSpaceKb\": ${availableDiskSpaceKb}}" > /dev/termination-log
 }
 
 sigterm_trap(){
@@ -69,7 +69,10 @@ sigterm_trap(){
      time rm -rf ${DOCKERD_DATA_ROOT}
    fi
 
-   write_termination_message
+   if [[ -n "${WRITE_TERMINATION_MESSAGE}" ]]; then
+     echo "Writing termination message"
+     write_termination_message
+   fi
 
    echo "Running processes: "
    ps -ef
