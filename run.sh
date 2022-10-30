@@ -23,6 +23,13 @@ echo ${CURRENT_TS} > ${DIND_VOLUME_LAST_USED_TS_FILE}
 export POD_NAME=${POD_NAME:-$(hostname)}
 echo "${POD_NAME} ${CURRENT_TS}" >> ${DIND_VOLUME_USED_BY_PODS_FILE}
 
+write_termination_message() {
+  local availableDiskSpaceKb=$(df ${DOCKERD_DATA_ROOT} | awk 'NR==2 {print $4}')
+  echo -e "\nAvailable disk space of $DOCKERD_DATA_ROOT at $(date) is: ${availableDiskSpaceKb}KiB"
+
+  echo "{\"availableDiskSpaceKb\": ${availableDiskSpaceKb}}" > /dev/termination-log
+}
+
 sigterm_trap(){
    echo "${1:-SIGTERM} received at $(date)"
    export SIGTERM=1
@@ -60,6 +67,11 @@ sigterm_trap(){
    if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" && -n "${DOCKERD_DATA_ROOT}" ]]; then
      echo "We used DIND_IMAGES_LIB directory, removing DOCKERD_DATA_ROOT = ${DOCKERD_DATA_ROOT}"
      time rm -rf ${DOCKERD_DATA_ROOT}
+   fi
+
+   if [[ -n "${WRITE_TERMINATION_MESSAGE}" ]]; then
+     echo "Writing termination message"
+     write_termination_message
    fi
 
    echo "Running processes: "
