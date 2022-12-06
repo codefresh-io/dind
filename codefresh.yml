@@ -5,7 +5,6 @@ stages:
   - build
   - release
 steps:
-
   main_clone:
     title: 'Cloning main repository...'
     stage: clone
@@ -40,6 +39,17 @@ steps:
       semver-cli greater $current_version $last_version && ok "Version check ok" || err "Please the update the version in the service.yaml file"
 
   build_image:
+    title: "Building the image..."
+    stage: build
+    type: build
+    working_directory: ${{main_clone}}
+    build_arguments:
+      - DOCKER_VERSION=${{DOCKER_VERSION}}
+    dockerfile: ./Dockerfile
+    image_name: ${{IMAGE_NAME}}
+    tag: ${{CF_BRANCH_TAG_NORMALIZED}}
+
+  build_image_rootless:
     title: "Building the image..."
     stage: build
     type: build
@@ -98,3 +108,17 @@ steps:
         when:
           branch:
             only: [master]
+
+      push_image_prod_rootless:
+        type: push
+        title: "Pushing the image to the public registry..."
+        stage: release
+        image_name: '${{IMAGE_NAME}}'
+        registry: "${{REGISTRY_INTEGRATION}}"
+        candidate: "${{build_image}}"
+        tags:
+          - "${{DOCKER_VERSION}}-v${{SERVICE_VERSION}}-rootless"
+          - "latest-rootless"
+        when:
+          branch:
+            only: [rootless]
