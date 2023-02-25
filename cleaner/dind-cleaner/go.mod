@@ -18,7 +18,7 @@ require (
 	github.com/pkg/errors v0.8.1-0.20180311214515-816c9085562c // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
-	golang.org/x/net v0.0.0-20200822124328-c89045814202
+	golang.org/x/net v0.7.0
 	golang.org/x/time v0.0.0-20210611083556-38a9dc6acbc6 // indirect
 	google.golang.org/grpc v1.39.0 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
