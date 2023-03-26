@@ -26,7 +26,7 @@ FROM docker:${DOCKER_VERSION}-dind
 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.11/main' >> /etc/apk/repositories \
   && apk upgrade \
-  && apk add bash jq --no-cache \
+  && apk add bash fuse-overlayfs jq --no-cache \
   && rm -rf /var/cache/apk/*
 
 COPY --from=node-exporter /bin/node_exporter /bin/
