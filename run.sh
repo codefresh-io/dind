@@ -232,7 +232,9 @@ if [[ -z "${DISABLE_CLEANER_AGENT}" && -z "${SIGTERM}" ]]; then
 fi
 
 DOCKERD_PID=$(cat /run/user/1000/docker.pid)
-echo "DOCKERD_PID = ${DOCKERD_PID} "
+echo "DOCKERD_PID = ${DOCKERD_PID}"
+
+[[ -n "${SIGTERM}" ]] && kill $DOCKERD_PID
 
 while true; do
   # Monitor docker daemon and kill the entrypoint if it dies - before rootless this used to do wait $DOCKERD_PID - but in rootless the daemon is not a direct child of the entrypoint - that's why we need this block
