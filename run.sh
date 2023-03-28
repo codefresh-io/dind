@@ -226,5 +226,6 @@ if [[ -z "${DISABLE_CLEANER_AGENT}" && -z "${SIGTERM}" ]]; then
 fi
 
 DOCKERD_PID=$(cat /var/run/docker.pid)
-echo "DOCKERD_PID = ${DOCKERD_PID} "
+echo "DOCKERD_PID = ${DOCKERD_PID}"
+[[ -n "${SIGTERM}" ]] && kill $DOCKERD_PID
 wait ${DOCKERD_PID}
