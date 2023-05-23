@@ -1,4 +1,4 @@
-ARG DOCKER_VERSION=20.10.18
+ARG DOCKER_VERSION=20.10.24
 
 # dind-cleaner
 FROM golang:1.16-alpine3.15 AS cleaner
