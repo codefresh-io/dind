@@ -19,7 +19,7 @@ FROM golang:1.19-alpine3.16 AS bolter
 RUN go install github.com/hasit/bolter@v0.0.0-20210331045447-e1283cecdb7b
 
 # node-exporter
-FROM quay.io/prometheus/node-exporter:v1.4.0 AS node-exporter
+FROM quay.io/prometheus/node-exporter:v1.5.0 AS node-exporter
 
 # Main
 FROM docker:${DOCKER_VERSION}-dind
