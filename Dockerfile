@@ -20,7 +20,7 @@ RUN apk add git
 RUN go install github.com/hasit/bolter@v0.0.0-20210331045447-e1283cecdb7b
 
 # node-exporter
-FROM quay.io/prometheus/node-exporter:v1.4.0 AS node-exporter
+FROM quay.io/prometheus/node-exporter:v1.5.0 AS node-exporter
 
 # Main
 FROM docker:${DOCKER_VERSION}-dind-rootless
