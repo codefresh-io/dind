@@ -3,13 +3,15 @@
 DIR=$(dirname $0)
 
 echo "Entering $0 at $(date) "
-DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/var/lib/docker}
+DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/home/rootless/.local/share/docker}
 DIND_VOLUME_STAT_DIR=${DIND_VOLUME_STAT_DIR:-${DOCKERD_DATA_ROOT}/dind-volume}
 DIND_VOLUME_CREATED_TS_FILE=${DIND_VOLUME_STAT_DIR}/created
 DIND_VOLUME_LAST_USED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_used
 DIND_VOLUME_USED_BY_PODS_FILE=${DIND_VOLUME_STAT_DIR}/pods
 
 DIND_IMAGES_LIB_DIR=${DIND_IMAGES_LIB_DIR:-"/opt/codefresh/dind/images-libs"}
+
+
 
 mkdir -p ${DIND_VOLUME_STAT_DIR}
 if [ ! -f ${DIND_VOLUME_STAT_DIR}/created ]; then
@@ -81,7 +83,7 @@ sigterm_trap(){
 trap sigterm_trap SIGTERM SIGINT
 
 # Starting run daemon
-rm -fv /var/run/docker.pid
+rm -fv /run/user/1000/docker.pid
 mkdir -p /var/run/codefresh
 
 # Setup Client certificate ca
@@ -92,27 +94,27 @@ if [[ -n "${CODEFRESH_CLIENT_CA_DATA}" ]]; then
 fi
 
 # creating daemon json
-if [[ ! -f /etc/docker/daemon.json ]]; then
+if [[ ! -f ~/.config/docker/daemon.json ]]; then
   DAEMON_JSON=${DAEMON_JSON:-default-daemon.json}
-  mkdir -p /etc/docker
-  cp -v ${DIR}/docker/${DAEMON_JSON} /etc/docker/daemon.json
+  mkdir -p ~/.config/docker
+  cp -v ${DIR}/docker/${DAEMON_JSON} ~/.config/docker/daemon.json
 fi
-echo "$(date) - Starting dockerd with /etc/docker/daemon.json: "
-cat /etc/docker/daemon.json
+echo "$(date) - Starting dockerd with ~/.config/docker/daemon.json: "
+cat ~/.config/docker/daemon.json
 
-# Docker registry self-signed Certs - workaround for problem where kubernetes cannot mount 
-for cc in $(find /etc/docker/certs.d -type d -maxdepth 1)
-do
-  echo "Trying to process Registery Self-Signed certs dir $cc "
-  ls -l "${cc}"
-  NEW_CERTS_DIR=$(echo $cc | sed -E 's/(.*)_([0-9]+)/\1\:\2/g')
+# Docker registry self-signed Certs - workaround for problem where kubernetes cannot mount    # Not sure if this block is still needed. This directory doesn't exist in any of our running dinds. Comment out for now.
+# for cc in $(find ~/.config/docker/certs.d -type d -maxdepth 1)
+# do
+#   echo "Trying to process Registery Self-Signed certs dir $cc "
+#   ls -l "${cc}"
+#   NEW_CERTS_DIR=$(echo $cc | sed -E 's/(.*)_([0-9]+)/\1\:\2/g')
 
-  if [[ "${cc}" != "${NEW_CERTS_DIR}" ]]; then
-    echo "Creating Registry Registery Self-Signed certs dir ${NEW_CERTS_DIR}"
-    mkdir -pv "${NEW_CERTS_DIR}"
-    cp -vrfL "${cc}"/{ca.crt,client.key,client.cert} "${NEW_CERTS_DIR}"/
-  fi
-done
+#   if [[ "${cc}" != "${NEW_CERTS_DIR}" ]]; then
+#     echo "Creating Registry Registery Self-Signed certs dir ${NEW_CERTS_DIR}"
+#     mkdir -pv "${NEW_CERTS_DIR}"
+#     cp -vrfL "${cc}"/{ca.crt,client.key,client.cert} "${NEW_CERTS_DIR}"/
+#   fi
+# done
 
 #DOCKERD_PARAMS=""
 if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" ]]; then
@@ -138,7 +140,7 @@ ${DIR}/monitor/start.sh  <&- &
 MONITOR_PID=$!
 
 ### start docker with retry
-DOCKERD_PID_FILE=/var/run/docker.pid
+DOCKERD_PID_FILE=/run/user/1000/docker.pid
 DOCKERD_PID_MAXWAIT=${DOCKERD_PID_MAXWAIT:-20}
 DOCKERD_LOCK_MAXWAIT=${DOCKERD_LOCK_MAXWAIT:-60}
 DOCKER_UP_MAXWAIT=${DOCKERD_UP_MAXWAIT:-90}
@@ -166,7 +168,7 @@ do
       rm -fv ${DOCKERD_PID_FILE}
   fi
 
-  echo "$(date) - Checking if other dockerd running on same /var/lib/docker by check locks on containerd/daemon/io.containerd.metadata.v1.bolt/meta.db "
+  echo "$(date) - Checking if other dockerd running on same /home/rootless/.local/share/docker by check locks on containerd/daemon/io.containerd.metadata.v1.bolt/meta.db "
   CONTEINERD_DB=${DOCKERD_DATA_ROOT}/containerd/daemon/io.containerd.metadata.v1.bolt/meta.db
   if [[ -f ${CONTEINERD_DB} ]]; then
     echo "Checking if another dockerd is running on same ${DOCKERD_DATA_ROOT} boltdb $CONTEINERD_DB is locked"
@@ -186,8 +188,11 @@ do
     echo "containerd db is not locked"
   fi
 
-  echo "Starting dockerd"
-  dockerd ${DOCKERD_PARAMS} <&- &
+  echo "Starting dockerd rootless"
+  #dockerd ${DOCKERD_PARAMS} <&- &
+  export DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="-p 0.0.0.0:1300:1300/tcp" # Expose rooltelsskit port
+  dockerd-entrypoint.sh dockerd ${DOCKERD_PARAMS} <&- &
+
   echo "Waiting at most 20s for docker pid"
   CNT=0
   while ! test -f "${DOCKERD_PID_FILE}" || test -z "$(cat ${DOCKERD_PID_FILE})"
@@ -202,6 +207,7 @@ do
     sleep 1
   done
 
+  export DOCKER_HOST='unix:///run/user/1000/docker.sock'
   echo "Waiting at most 2m for docker pid"
   CNT=0
   while ! docker ps
@@ -225,7 +231,16 @@ if [[ -z "${DISABLE_CLEANER_AGENT}" && -z "${SIGTERM}" ]]; then
   CLEANER_AGENT_PID=$!
 fi
 
-DOCKERD_PID=$(cat /var/run/docker.pid)
+DOCKERD_PID=$(cat /run/user/1000/docker.pid)
 echo "DOCKERD_PID = ${DOCKERD_PID}"
+
 [[ -n "${SIGTERM}" ]] && kill $DOCKERD_PID
-wait ${DOCKERD_PID}
+
+while true; do
+  # Monitor docker daemon and kill the entrypoint if it dies - before rootless this used to do wait $DOCKERD_PID - but in rootless the daemon is not a direct child of the entrypoint - that's why we need this block
+  if [ ! -d "/proc/$DOCKERD_PID" ]; then
+      echo "Docker daemon no longer running, Exitting"
+      exit 1
+  fi
+  sleep 1;
+done
