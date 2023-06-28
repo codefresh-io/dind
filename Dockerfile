@@ -34,7 +34,7 @@ RUN echo -en "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpi
   && apk upgrade \
   && apk add bash jq fuse-overlayfs --no-cache \
   && apk add slirp4netns --no-cache \
-  && rm /usr/local/bin/vpnkit  && \
+  && rm /usr/local/bin/vpnkit \
   && rm -rf /var/cache/apk/*
 
 ENV DOCKERD_ROOTLESS_ROOTLESSKIT_NET=slirp4netns
