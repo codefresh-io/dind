@@ -1,4 +1,4 @@
-ARG DOCKER_VERSION=20.10.18
+ARG DOCKER_VERSION=20.10.24
 
 # dind-cleaner
 FROM golang:1.16-alpine3.15 AS cleaner
@@ -33,7 +33,11 @@ RUN chown -R $(id -u rootless) /var /run /lib /home /etc/ssl /etc/apk
 RUN echo -en "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpine-release)/main\nhttps://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpine-release)/community" > /etc/apk/repositories \
   && apk upgrade \
   && apk add bash jq fuse-overlayfs --no-cache \
+  && apk add slirp4netns --no-cache \
+  && rm /usr/local/bin/vpnkit \
   && rm -rf /var/cache/apk/*
+
+ENV DOCKERD_ROOTLESS_ROOTLESSKIT_NET=slirp4netns
 
 COPY --from=node-exporter /bin/node_exporter /bin/
 COPY --from=cleaner /usr/local/bin/dind-cleaner /bin/
