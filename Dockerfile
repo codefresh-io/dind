@@ -1,4 +1,4 @@
-ARG DOCKER_VERSION=20.10.18
+ARG DOCKER_VERSION=20.10.24
 
 # dind-cleaner
 FROM golang:1.16-alpine3.15 AS cleaner
@@ -11,8 +11,8 @@ RUN go mod tidy
 COPY cleaner/dind-cleaner/cmd ./cmd/
 
 RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd && \
-    chmod +x /usr/local/bin/dind-cleaner && \
-    rm -rf /go/*
+  chmod +x /usr/local/bin/dind-cleaner && \
+  rm -rf /go/*
 
 # bolter
 FROM golang:1.19-alpine3.16 AS bolter
