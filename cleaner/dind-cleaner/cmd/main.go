@@ -17,13 +17,14 @@ limitations under the License.
 package main
 
 import (
-	"time"
+	"bufio"
 	"flag"
 	"os"
-	"bufio"
-	"github.com/golang/glog"
+	"time"
+
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/golang/glog"
 	"golang.org/x/net/context"
 )
 
@@ -34,37 +35,38 @@ func readFileLines(path string) ([]string, error) {
 	}
 	file, err := os.Open(path)
 	if err != nil {
-	  return nil, err
+		return nil, err
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-	  lines = append(lines, scanner.Text())
+		lines = append(lines, scanner.Text())
 	}
 	return lines, scanner.Err()
 }
 
 var dryRun *bool
-const (
-   cmdImages = "images"
 
-   statusFound = "found"
-   statusRemoved = "removed"
-   statusRetainedByList = "retainedByList"
-   statusRetainedByDate = "retainedByDate"
-   statusChildRetained = "childRetained"
-   statusChildFailedToRemove = "childFailedToRemove"
-   statusFailedToRemove = "failedToRemove"
+const (
+	cmdImages = "images"
+
+	statusFound               = "found"
+	statusRemoved             = "removed"
+	statusRetainedByList      = "retainedByList"
+	statusRetainedByDate      = "retainedByDate"
+	statusChildRetained       = "childRetained"
+	statusChildFailedToRemove = "childFailedToRemove"
+	statusFailedToRemove      = "failedToRemove"
 )
 
 func _stringInList(list []string, s string) bool {
 	for _, a := range list {
-        if a == s {
-            return true
-        }
-    }
-    return false
+		if a == s {
+			return true
+		}
+	}
+	return false
 }
 
 func cleanImages(retainedImagesList []string, retainPeriod int64) {
@@ -72,32 +74,31 @@ func cleanImages(retainedImagesList []string, retainPeriod int64) {
 	if os.Getenv("DOCKER_API_VERSION") == "" {
 		os.Setenv("DOCKER_API_VERSION", "1.35")
 	}
-	
+
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		panic(err)
 	}
 
 	type imageToCleanStruct = struct {
-		ID string
-		Created int64
-		ParentID string
-		status string
-		tags []string
+		ID          string
+		Created     int64
+		ParentID    string
+		status      string
+		tags        []string
 		childrenIDs map[string]string
-		size int64
+		size        int64
 	}
 
-
 	/*
-	Purpose: remove images starting from first child excluding ids in retainedImagesList
-	Logic:
-	1. get All images (with All=true)
-	2. fill map of imageToCleanStruct - for each image fill its children in the map of [id]"status"
-	3. find images with no children
-	4. loop by found images with no children and delete them, then update childrenList of whole map of imageToCleanStruct. 
-	   Skip deletion for images in retainedImagesList  
-	--- Repeat 3-4 until images to delete found
+		Purpose: remove images starting from first child excluding ids in retainedImagesList
+		Logic:
+		1. get All images (with All=true)
+		2. fill map of imageToCleanStruct - for each image fill its children in the map of [id]"status"
+		3. find images with no children
+		4. loop by found images with no children and delete them, then update childrenList of whole map of imageToCleanStruct.
+		   Skip deletion for images in retainedImagesList
+		--- Repeat 3-4 until images to delete found
 
 	*/
 
@@ -115,12 +116,12 @@ func cleanImages(retainedImagesList []string, retainPeriod int64) {
 	images := make(map[string]*imageToCleanStruct)
 	for _, img := range imagesFullList {
 		images[img.ID] = &imageToCleanStruct{
-			ID: img.ID,
-			Created: img.Created,
-			ParentID: img.ParentID,
-			status: statusFound,
-			tags: img.RepoTags,
-			size: img.Size,
+			ID:          img.ID,
+			Created:     img.Created,
+			ParentID:    img.ParentID,
+			status:      statusFound,
+			tags:        img.RepoTags,
+			size:        img.Size,
 			childrenIDs: make(map[string]string),
 		}
 	}
@@ -131,7 +132,7 @@ func cleanImages(retainedImagesList []string, retainPeriod int64) {
 			parentImage, parentImageInList := images[img.ParentID]
 			if parentImageInList {
 				parentImage.childrenIDs[imageID] = statusFound
-			} 
+			}
 		}
 	}
 
@@ -164,8 +165,8 @@ func cleanImages(retainedImagesList []string, retainPeriod int64) {
 				glog.Infof("   Skiping image %s - %v , it appears in retained list", imageID, images[imageID].tags)
 				images[imageID].status = statusRetainedByList
 			} else if retainPeriod > 0 && images[imageID].Created > 0 && images[imageID].Created < currentTs &&
-			    currentTs - images[imageID].Created < retainPeriod {
-				
+				currentTs-images[imageID].Created < retainPeriod {
+
 				glog.Infof("   Skiping image %s - %v , its created more than retainPeriod %d seconds ago", imageID, images[imageID].tags, retainPeriod)
 				images[imageID].status = statusRetainedByDate
 			} else {
@@ -175,9 +176,9 @@ func cleanImages(retainedImagesList []string, retainPeriod int64) {
 				if !*dryRun {
 					_, err = cli.ImageRemove(ctx, imageID, types.ImageRemoveOptions{Force: true, PruneChildren: false})
 				} else {
-					glog.Infof(    "DRY RUN - do not actually delete")
+					glog.Infof("DRY RUN - do not actually delete")
 				}
-				
+
 				if err == nil {
 					glog.Infof("   image %s - %v has been deleted", imageID, images[imageID].tags)
 					images[imageID].status = statusRemoved
@@ -187,17 +188,17 @@ func cleanImages(retainedImagesList []string, retainPeriod int64) {
 				}
 			}
 
-			glog.Infof("   setting image status to %s",  images[imageID].status)
+			glog.Infof("   setting image status to %s", images[imageID].status)
 			for _, img := range images {
 				if _, ok := img.childrenIDs[imageID]; ok {
 					if images[imageID].status == statusRemoved {
 						glog.Infof("       deleting the child from parent image %s - %v", img.ID, img.tags)
 						delete(img.childrenIDs, imageID)
-					} else if images[imageID].status == statusRetainedByList || images[imageID].status == statusRetainedByDate  {
+					} else if images[imageID].status == statusRetainedByList || images[imageID].status == statusRetainedByDate {
 						glog.Infof("       setting child status %s for image %s - %v", images[imageID].status, img.ID, img.tags)
 						img.childrenIDs[imageID] = images[imageID].status
 						img.status = statusChildRetained
-						
+
 					} else if images[imageID].status == statusFailedToRemove {
 						glog.Infof("       setting child status %s and deleting the from parent image %s - %v", images[imageID].status, img.ID, img.tags)
 						delete(img.childrenIDs, imageID)
@@ -215,7 +216,7 @@ func cleanImages(retainedImagesList []string, retainPeriod int64) {
 		for childID, childStatus := range img.childrenIDs {
 			glog.Infof("      Child: %s - %s (grandchild retained)", childID, childStatus)
 		}
-		
+
 		totalImagesSize += img.size
 		switch img.status {
 		case statusRemoved:
@@ -229,17 +230,17 @@ func cleanImages(retainedImagesList []string, retainPeriod int64) {
 		}
 	}
 
-	glog.Infof("\n-----------\n" +
-	"    total images shared size: %.3f Mb \n" +
-	"         removed shared size: %.3f  Mb \n" +
-	"retained shared by list size: %.3f  Mb \n" +
-	"retained shared by date size: %.3f  Mb \n" +
-	"       failed to remove size: %.3f  Mb ", 
-	float64(totalImagesSize)/1024/1024.0, 
-	float64(removedSize)/1024/1024.0, 
-	float64(retainedByListSize)/1024/1024.0,
-	float64(retainedByDateSize)/1024/1024.0, 
-	float64(failedToRemoveSize)/1024/1024.0)	 
+	glog.Infof("\n-----------\n"+
+		"    total images shared size: %.3f Mb \n"+
+		"         removed shared size: %.3f  Mb \n"+
+		"retained shared by list size: %.3f  Mb \n"+
+		"retained shared by date size: %.3f  Mb \n"+
+		"       failed to remove size: %.3f  Mb ",
+		float64(totalImagesSize)/1024/1024.0,
+		float64(removedSize)/1024/1024.0,
+		float64(retainedByListSize)/1024/1024.0,
+		float64(retainedByDateSize)/1024/1024.0,
+		float64(failedToRemoveSize)/1024/1024.0)
 }
 
 func main() {
@@ -254,10 +255,10 @@ Commands:
 	flag.Set("v", "4")
 	flag.Set("alsologtostderr", "true")
 	validCommands := []string{"images"}
-    if len(os.Args) < 2 {
+	if len(os.Args) < 2 {
 		glog.Errorf("%s", usage)
 		os.Exit(2)
-	} else if !_stringInList(validCommands,os.Args[1]) {
+	} else if !_stringInList(validCommands, os.Args[1]) {
 		glog.Errorf("Invalid command %s\n%s", os.Args[1], usage)
 		os.Exit(2)
 	}
@@ -265,7 +266,7 @@ Commands:
 	imagesCommand := flag.NewFlagSet("images", flag.ExitOnError)
 	retainedImagesListFile := imagesCommand.String("retained-images-file", "", "Retained images list file")
 	imageRetainPeriod := imagesCommand.Int64("image-retain-period", 86400, "image retain period")
-	
+
 	dryRun = imagesCommand.Bool("dry-run", false, "dry run - only print actions")
 
 	switch os.Args[1] {
@@ -281,13 +282,12 @@ Commands:
 		*dryRun = true
 	}
 
-
 	glog.Infof("\n----------------\n Started dind-cleaner")
-	
-	glog.Infof("First verson - only image cleaner. " +
-			   "retainedImagesListFile = %s " +
-			   "retainedImagesPeriod = %d " +  
-			   "dry-run = %t" , *retainedImagesListFile, *imageRetainPeriod, *dryRun)
+
+	glog.Infof("First verson - only image cleaner. "+
+		"retainedImagesListFile = %s "+
+		"retainedImagesPeriod = %d "+
+		"dry-run = %t", *retainedImagesListFile, *imageRetainPeriod, *dryRun)
 
 	retainedImagesList, err := readFileLines(*retainedImagesListFile)
 	if err != nil {
