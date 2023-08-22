@@ -1,7 +1,7 @@
-ARG DOCKER_VERSION=20.10.24
+ARG DOCKER_VERSION=24.0.5
 
 # dind-cleaner
-FROM golang:1.16-alpine3.15 AS cleaner
+FROM golang:1.21-alpine3.18 AS cleaner
 
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
@@ -15,12 +15,12 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd && \
   rm -rf /go/*
 
 # bolter
-FROM golang:1.19-alpine3.16 AS bolter
+FROM golang:1.21-alpine3.18 AS bolter
 RUN apk add git
 RUN go install github.com/hasit/bolter@v0.0.0-20210331045447-e1283cecdb7b
 
 # node-exporter
-FROM quay.io/prometheus/node-exporter:v1.5.0 AS node-exporter
+FROM quay.io/prometheus/node-exporter:v1.6.1 AS node-exporter
 
 # Main
 FROM docker:${DOCKER_VERSION}-dind-rootless
