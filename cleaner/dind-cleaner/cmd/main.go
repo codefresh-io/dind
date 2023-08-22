@@ -75,7 +75,9 @@ func cleanImages(retainedImagesList []string, retainPeriod int64) {
 		os.Setenv("DOCKER_API_VERSION", "1.35")
 	}
 
-	cli, err := client.NewEnvClient()
+	cli, err := client.NewClientWithOpts(
+		client.FromEnv,
+	)
 	if err != nil {
 		panic(err)
 	}
