@@ -16,7 +16,7 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd && \
 
 # bolter
 FROM golang:1.21-alpine3.18 AS bolter
-RUN go install github.com/hasit/bolter@v0.0.0-20230502180907-68d80baa7620
+RUN go install github.com/hasit/bolter@v0.0.0-20221019173212-593eefaa56b7
 
 # node-exporter
 FROM quay.io/prometheus/node-exporter:v1.6.1 AS node-exporter
