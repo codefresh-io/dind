@@ -55,7 +55,7 @@ sigterm_trap(){
      echo "Starting Cleaner"
      ${DIR}/cleaner/docker-clean.sh
    fi
-   
+
    echo "Cleaning old events files"
    find ${DOCKER_EVENTS_DIR} -type f -mtime +10 -exec rm -fv {} \;
 
@@ -152,7 +152,7 @@ do
       DOCKERD_PID=$(cat ${DOCKERD_PID_FILE})
       echo "  Waiting for dockerd pid ${DOCKERD_PID_FILE} to exit ..."
       CNT=0
-      pkill dockerd 
+      pkill dockerd
       while pgrep -l dockerd
       do
         [[ -n "${SIGTERM}" ]] && break 2
@@ -173,7 +173,7 @@ do
   if [[ -f ${CONTEINERD_DB} ]]; then
     echo "Checking if another dockerd is running on same ${DOCKERD_DATA_ROOT} boltdb $CONTEINERD_DB is locked"
     CNT=0
-    while ! bolter --file ${CONTEINERD_DB}
+    while ! bbolt check ${CONTEINERD_DB}
     do
       [[ -n "${SIGTERM}" ]] && break 2
       echo "$(date) - Waiting for containerd boltd ${CONTEINERD_DB}"
@@ -184,7 +184,7 @@ do
       fi
       sleep 1
     done
-  else 
+  else
     echo "containerd db is not locked"
   fi
 
