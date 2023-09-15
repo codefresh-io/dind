@@ -14,10 +14,9 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd && \
   chmod +x /usr/local/bin/dind-cleaner && \
   rm -rf /go/*
 
-# bolter
-FROM golang:1.21-alpine3.18 AS bolter
-RUN apk add git
-RUN go install github.com/hasit/bolter@v0.0.0-20210331045447-e1283cecdb7b
+# bbolt
+FROM golang:1.21-alpine3.18 AS bbolt
+RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 # node-exporter
 FROM quay.io/prometheus/node-exporter:v1.6.1 AS node-exporter
@@ -41,7 +40,7 @@ ENV DOCKERD_ROOTLESS_ROOTLESSKIT_NET=slirp4netns
 
 COPY --from=node-exporter /bin/node_exporter /bin/
 COPY --from=cleaner /usr/local/bin/dind-cleaner /bin/
-COPY --from=bolter /go/bin/bolter /bin/
+COPY --from=bbolt /go/bin/bbolt /bin/
 
 WORKDIR /dind
 ADD . /dind
