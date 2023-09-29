@@ -1,0 +1,35 @@
+## Reference: https://github.com/release-drafter/release-drafter
+name: Create Release
+
+on:
+  push:
+    branches:
+      - rootless
+
+jobs:
+  create_release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up YQ
+        uses: frenck/action-setup-yq@v1
+
+      - name: Get release version from service.yaml
+        run: |
+          RELEASE_VERSION=$(yq eval '.version' service.yaml )
+          echo "RELEASE_VERSION=v$RELEASE_VERSION-rootless" >> $GITHUB_ENV
+
+      - uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          publish: true
+          name: ${{ env.RELEASE_VERSION }}
+          version: ${{ env.RELEASE_VERSION }}
+          tag: ${{ env.RELEASE_VERSION }}
+          config-name: release-drafter.yaml
