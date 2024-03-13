@@ -1,7 +1,7 @@
-ARG DOCKER_VERSION=24.0.6
+ARG DOCKER_VERSION=25.0.4
 
 # dind-cleaner
-FROM golang:1.21-alpine3.18 AS cleaner
+FROM golang:1.22-alpine3.19 AS cleaner
 
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
@@ -15,11 +15,11 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd && \
   rm -rf /go/*
 
 # bbolt
-FROM golang:1.21-alpine3.18 AS bbolt
+FROM golang:1.22-alpine3.19 AS bbolt
 RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 # node-exporter
-FROM quay.io/prometheus/node-exporter:v1.6.1 AS node-exporter
+FROM quay.io/prometheus/node-exporter:v1.7.0 AS node-exporter
 
 # Main
 FROM docker:${DOCKER_VERSION}-dind-rootless
