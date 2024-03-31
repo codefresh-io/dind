@@ -27,8 +27,9 @@ FROM docker:${DOCKER_VERSION}-dind
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.19/main' >> /etc/apk/repositories \
   && apk upgrade \
   # Add fuse-overlayfs for comaptibility with rootless. Volumes created with rootless might use fuse-overlay formatted volumes. If those volumes are later used by dind that runs with root it'll require fuse-overlay to be able to read the volume
-  && apk add bash fuse-overlayfs jq --no-cache \
+  && apk add bash fuse-overlayfs jq dpkg --no-cache \
   && rm -rf /var/cache/apk/*
+RUN update-alternatives --install $(which iptables) iptables $(which iptables-legacy) 10
 
 COPY --from=node-exporter /bin/node_exporter /bin/
 COPY --from=cleaner /usr/local/bin/dind-cleaner /bin/
