@@ -33,8 +33,14 @@ RUN echo -en "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpi
   && apk upgrade \
   && apk add bash jq fuse-overlayfs --no-cache \
   && apk add slirp4netns --no-cache \
+  # Needed only for `update-alternatives` below
+  && apk add dpkg --no-cache \
   && rm /usr/local/bin/vpnkit \
   && rm -rf /var/cache/apk/*
+
+# Backward compatibility with kernels that do not support `iptables-nft`. Check #CR-23033 for details.
+RUN update-alternatives --install $(which iptables) iptables $(which iptables-legacy) 10 \
+  && update-alternatives --install $(which ip6tables) ip6tables $(which ip6tables-legacy) 10
 
 ENV DOCKERD_ROOTLESS_ROOTLESSKIT_NET=slirp4netns
 
