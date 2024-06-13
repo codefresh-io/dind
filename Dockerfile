@@ -1,4 +1,4 @@
-ARG DOCKER_VERSION=26.0.0
+ARG DOCKER_VERSION=26.1.4
 
 # dind-cleaner
 FROM golang:1.22-alpine3.19 AS cleaner
