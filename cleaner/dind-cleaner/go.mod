@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/docker/docker v26.0.0+incompatible
 	github.com/golang/glog v1.1.2
-	golang.org/x/net v0.22.0
+	golang.org/x/net v0.23.0
 )
 
 require (
