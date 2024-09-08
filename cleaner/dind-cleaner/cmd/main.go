@@ -22,7 +22,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
@@ -106,7 +106,7 @@ func cleanImages(retainedImagesList []string, retainPeriod int64) {
 
 	// 1. Get All Images
 	ctx := context.Background()
-	imagesFullList, err := cli.ImageList(ctx, types.ImageListOptions{All: true})
+	imagesFullList, err := cli.ImageList(ctx, image.ListOptions{All: true})
 	if err != nil {
 		panic(err)
 	}
@@ -176,7 +176,7 @@ func cleanImages(retainedImagesList []string, retainPeriod int64) {
 				// add image delete here
 				var err error
 				if !*dryRun {
-					_, err = cli.ImageRemove(ctx, imageID, types.ImageRemoveOptions{Force: true, PruneChildren: false})
+					_, err = cli.ImageRemove(ctx, imageID, image.RemoveOptions{Force: true, PruneChildren: false})
 				} else {
 					glog.Infof("DRY RUN - do not actually delete")
 				}
