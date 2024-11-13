@@ -53,6 +53,7 @@ ADD . /dind
 
 RUN chown -R $(id -u rootless) /dind
 RUN chown -R $(id -u rootless) /var/run
+RUN chown -R $(id -u rootless) /run/user
 
 RUN chown -R $(id -u rootless) /etc/ssl && chmod 777 -R /etc/ssl
 USER rootless
