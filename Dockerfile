@@ -57,5 +57,8 @@ RUN chown -R $(id -u rootless) /run/user
 
 RUN chown -R $(id -u rootless) /etc/ssl && chmod 777 -R /etc/ssl
 USER rootless
-RUN rm -i -f /var/run && ln -s /run/user/1000 /var/run
+RUN rm -i -f /var/run && \
+  ln -s /run/user/1000 /var/run && \
+  ln -s /run/user/1000/docker.pid /var/run/docker.pid && \
+  ln -s /run/user/1000/docker.sock /var/run/docker.sock 
 ENTRYPOINT ["./run.sh"]
