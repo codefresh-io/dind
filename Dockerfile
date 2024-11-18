@@ -55,6 +55,13 @@ RUN chown -R $(id -u rootless) /dind
 RUN chown -R $(id -u rootless) /var/run
 
 RUN chown -R $(id -u rootless) /etc/ssl && chmod 777 -R /etc/ssl
-USER rootless
 RUN rm -i -f /var/run && ln -s /run/user/1000 /var/run
+
+RUN set -eux; \
+	mkdir -p /home/rootless/.local/share/docker; \
+	chown -R rootless:rootless /home/rootless/.local/share/docker
+
+VOLUME /home/rootless/.local/share/docker
+USER rootless
+
 ENTRYPOINT ["./run.sh"]
