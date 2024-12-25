@@ -5,7 +5,7 @@ go 1.23
 require (
 	github.com/docker/docker v26.1.5+incompatible
 	github.com/golang/glog v1.2.3
-	golang.org/x/net v0.30.0
+	golang.org/x/net v0.33.0
 )
 
 require (
@@ -30,7 +30,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.31.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.31.0 // indirect
 	go.opentelemetry.io/otel/trace v1.31.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/time v0.7.0 // indirect
 	gotest.tools/v3 v3.5.1 // indirect
 )
