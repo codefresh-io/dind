@@ -15,14 +15,16 @@ To determine what to delete we will use information stored in /var/lib/docker/di
   CLEAN_PERIOD_BUILDS - we will launch clean if last clean was more than CLEAN_PERIOD_SECONDS seconds ago 
            or there was more than  CLEAN_PERIOD_BUILDS nuilds since last build
 
-  IMAGE_RETAIN_PERIOD - we will not delete images if they have events since `current_timestamp - IMAGE_RETAIN_PERIOD` (default 3d)
-  VOLUMES_RETAIN_PERIOD - we will not delete volumes if they have events since `current_timestamp - IMAGE_RETAIN_PERIOD` (default 3d)
+  IMAGE_RETAIN_PERIOD - we will not delete images if they have events since `current_timestamp - IMAGE_RETAIN_PERIOD` (default 4h)
+  VOLUMES_RETAIN_PERIOD - we will not delete volumes if they have events since `current_timestamp - IMAGE_RETAIN_PERIOD` (default 4h)
   
 ####### defaults:
-  CLEAN_PERIOD_SECONDS=${CLEAN_PERIOD_SECONDS:-21600} # 6 hours
-  CLEAN_PERIOD_BUILDS=${CLEAN_PERIOD_BUILDS:-10}
-  IMAGE_RETAIN_PERIOD=${IMAGE_RETAIN_PERIOD:-259200}
-  VOLUMES_RETAIN_PERIOD=${VOLUMES_RETAIN_PERIOD:-259200}
+  CLEAN_PERIOD_SECONDS: '21600' # launch clean if last clean was more than CLEAN_PERIOD_SECONDS seconds ago
+  CLEAN_PERIOD_BUILDS: '5' # launch clean if last clean was more CLEAN_PERIOD_BUILDS builds since last build
+  IMAGE_RETAIN_PERIOD: '14400' # do not delete docker images if they have events since current_timestamp - IMAGE_RETAIN_PERIOD
+  VOLUMES_RETAIN_PERIOD: '14400' # do not delete docker volumes if they have events since current_timestamp - VOLUMES_RETAIN_PERIOD
+  DISK_USAGE_THRESHOLD: '0.8' # launch clean based on current disk usage DISK_USAGE_THRESHOLD
+  INODES_USAGE_THRESHOLD: '0.8' # launch clean based on current inodes usage INODES_USAGE_THRESHOLD
   
 ##### Logic:
 - save current docker events by `docker events --until 0s -f ${EVENT_FORMAT} > /var/lib/docker/dind-volume/events/$(date +%s)`
