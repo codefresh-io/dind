@@ -1,7 +1,7 @@
-ARG DOCKER_VERSION=28.1.1
+ARG DOCKER_VERSION=28.3.3
 
 # dind-cleaner
-FROM golang:1.24-alpine3.21 AS cleaner
+FROM golang:1.25-alpine3.22 AS cleaner
 
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
@@ -15,7 +15,7 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd && \
   rm -rf /go/*
 
 # bbolt
-FROM golang:1.24-alpine3.21 AS bbolt
+FROM golang:1.25-alpine3.22 AS bbolt
 RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 # node-exporter
