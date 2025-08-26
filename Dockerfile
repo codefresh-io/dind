@@ -43,4 +43,4 @@ COPY --from=bbolt /go/bin/bbolt /bin/
 WORKDIR /dind
 ADD . /dind
 
-ENTRYPOINT ["./wrapper.sh"]
+ENTRYPOINT ["./run.sh"]
