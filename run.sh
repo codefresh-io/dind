@@ -186,10 +186,8 @@ do
     echo "containerd db is not locked"
   fi
 
-  CURRENT_CGROUP=$(cat /proc/self/cgroup | grep '0::' | sed 's/0:://')
-  echo "Current cgroup: ${CURRENT_CGROUP}"
   echo "Starting dockerd"
-  dockerd --cgroup-parent "${CURRENT_CGROUP}" ${DOCKERD_PARAMS} <&- &
+  dockerd --cgroup-parent "docker" ${DOCKERD_PARAMS} <&- &
   echo "Waiting at most 20s for docker pid"
   CNT=0
   while ! test -f "${DOCKERD_PID_FILE}" || test -z "$(cat ${DOCKERD_PID_FILE})"
