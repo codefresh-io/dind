@@ -194,7 +194,7 @@ do
     echo "Using cgroup v2"
     CURRENT_CGROUP=$(cat /proc/self/cgroup | sed 's/0:://')
     echo "Current cgroup: ${CURRENT_CGROUP}"
-    dockerd --cgroup-parent "${CURRENT_CGROUP}/docker"
+    dockerd --cgroup-parent "${CURRENT_CGROUP}/docker" ${DOCKERD_PARAMS} <&- &
   fi
   echo "Waiting at most 20s for docker pid"
   CNT=0
