@@ -187,7 +187,15 @@ do
   fi
 
   echo "Starting dockerd"
-  dockerd --cgroup-parent "docker" ${DOCKERD_PARAMS} <&- &
+  if [[ "$(stat -fc %T /sys/fs/cgroup/)" == "tmpfs" ]]; then
+    echo "Using cgroup v1"
+    dockerd ${DOCKERD_PARAMS} <&- &
+  else
+    echo "Using cgroup v2"
+    CURRENT_CGROUP=$(cat /proc/self/cgroup | sed 's/0:://')
+    echo "Current cgroup: ${CURRENT_CGROUP}"
+    dockerd --cgroup-parent "${CURRENT_CGROUP}/docker"
+  fi
   echo "Waiting at most 20s for docker pid"
   CNT=0
   while ! test -f "${DOCKERD_PID_FILE}" || test -z "$(cat ${DOCKERD_PID_FILE})"
