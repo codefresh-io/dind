@@ -199,7 +199,8 @@ do
     echo "Changing ${CONTAINER_OOM_GROUP} to 0 to disable killing all processes in cgroup on OOM"
     echo "0" > "${CONTAINER_OOM_GROUP}"
     echo "cgroup ${CONTAINER_OOM_GROUP} value: $(cat "${CONTAINER_OOM_GROUP}")"
-    dockerd --cgroup-parent "${CURRENT_CGROUP}/docker" ${DOCKERD_PARAMS} <&- &
+    # dockerd --cgroup-parent "${CURRENT_CGROUP}/docker" ${DOCKERD_PARAMS} <&- &
+    dockerd --cgroup-parent "codefresh-dind" ${DOCKERD_PARAMS} <&- &
   fi
   echo "Waiting at most 20s for docker pid"
   CNT=0
