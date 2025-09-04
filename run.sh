@@ -187,7 +187,7 @@ do
   fi
 
   echo "Starting dockerd"
-  if [[ "$(stat -fc %T /sys/fs/cgroup/)" == "tmpfs" ]]; then
+  if [ ! -f /sys/fs/cgroup/cgroup.controllers ]; then
     echo "Using cgroup v1"
     dockerd ${DOCKERD_PARAMS} <&- &
   else
