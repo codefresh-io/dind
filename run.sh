@@ -189,9 +189,24 @@ do
   fi
 
   echo "Starting dockerd rootless"
-  #dockerd ${DOCKERD_PARAMS} <&- &
-  export DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="-p 0.0.0.0:1300:1300/tcp" # Expose rooltelsskit port
-  dockerd-entrypoint.sh dockerd ${DOCKERD_PARAMS} <&- &
+  if [ ! -f /sys/fs/cgroup/cgroup.controllers ]; then
+    echo "Using cgroup v1"
+    dockerd ${DOCKERD_PARAMS} <&- &
+  else
+    echo "Using cgroup v2"
+
+    CURRENT_CGROUP=$(cat /proc/self/cgroup | sed 's/0:://')
+    echo "Current cgroup: ${CURRENT_CGROUP}"
+    CONTAINER_OOM_GROUP="/sys/fs/cgroup/${CURRENT_CGROUP}/memory.oom.group"
+    echo "cgroup ${CONTAINER_OOM_GROUP} value: $(cat "${CONTAINER_OOM_GROUP}")"
+    echo "Changing ${CONTAINER_OOM_GROUP} to 0 to disable killing all processes in cgroup on OOM"
+    echo "0" > "${CONTAINER_OOM_GROUP}"
+    echo "cgroup ${CONTAINER_OOM_GROUP} value: $(cat "${CONTAINER_OOM_GROUP}")"
+
+    #dockerd ${DOCKERD_PARAMS} <&- &
+    export DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="-p 0.0.0.0:1300:1300/tcp" # Expose rooltelsskit port
+    dockerd-entrypoint.sh dockerd ${DOCKERD_PARAMS} <&- &
+  fi
 
   echo "Waiting at most 20s for docker pid"
   CNT=0
