@@ -195,11 +195,10 @@ do
 
     CURRENT_CGROUP=$(cat /proc/self/cgroup | sed 's/0:://')
     echo "Current cgroup: ${CURRENT_CGROUP}"
-    CONTAINER_OOM_GROUP="/sys/fs/cgroup/${CURRENT_CGROUP}/memory.oom.group"
-    echo "cgroup ${CONTAINER_OOM_GROUP} value: $(cat "${CONTAINER_OOM_GROUP}")"
-    echo "Changing ${CONTAINER_OOM_GROUP} to 0 to disable killing all processes in cgroup on OOM"
-    echo "0" > "${CONTAINER_OOM_GROUP}"
-    echo "cgroup ${CONTAINER_OOM_GROUP} value: $(cat "${CONTAINER_OOM_GROUP}")"
+    MEMORY_OOM_GROUP="/sys/fs/cgroup/${CURRENT_CGROUP}/memory.oom.group"
+    echo "Ensuring "memory.oom.group" is set to 0 to disable killing all processes in cgroup on OOM"
+    echo "0" > "${MEMORY_OOM_GROUP}"
+    echo "Current cgroup "memory.oom.group" value: $(cat "${MEMORY_OOM_GROUP}")"
 
     dockerd --cgroup-parent "codefresh-dind" ${DOCKERD_PARAMS} <&- &
   fi
