@@ -192,15 +192,13 @@ do
     dockerd ${DOCKERD_PARAMS} <&- &
   else
     echo "Using cgroup v2"
-
     CURRENT_CGROUP=$(cat /proc/self/cgroup | sed 's/0:://')
     echo "Current cgroup: ${CURRENT_CGROUP}"
     MEMORY_OOM_GROUP="/sys/fs/cgroup/${CURRENT_CGROUP}/memory.oom.group"
     echo "Ensuring memory.oom.group is set to 0 to disable killing all processes in cgroup on OOM"
     echo "0" > "${MEMORY_OOM_GROUP}"
     echo "Current memory.oom.group value: $(cat "${MEMORY_OOM_GROUP}")"
-
-    dockerd --cgroup-parent "codefresh-dind" ${DOCKERD_PARAMS} <&- &
+    dockerd --cgroup-parent "${CURRENT_CGROUP}/codefresh-dind" ${DOCKERD_PARAMS} <&- &
   fi
   echo "Waiting at most 20s for docker pid"
   CNT=0
