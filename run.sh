@@ -193,17 +193,18 @@ do
   else
     echo "Using cgroup v2"
     CURRENT_CGROUP=$(cat /proc/self/cgroup | sed 's/0:://')
+    CURRENT_CGROUP_PATH="/sys/fs/cgroup/${CURRENT_CGROUP}"
     echo "Current cgroup: ${CURRENT_CGROUP}"
     # move the processes from the root group to the /init group,
     # otherwise writing subtree_control fails with EBUSY.
     # An error during moving non-existent process (i.e., "cat") is ignored.
-    mkdir -p ${CURRENT_CGROUP}/init
-    xargs -rn1 < ${CURRENT_CGROUP}/cgroup.procs > ${CURRENT_CGROUP}/init/cgroup.procs || :
+    mkdir -p ${CURRENT_CGROUP_PATH}/init
+    xargs -rn1 < ${CURRENT_CGROUP_PATH}/cgroup.procs > ${CURRENT_CGROUP_PATH}/init/cgroup.procs || :
     # # enable controllers
-    # sed -e 's/ / +/g' -e 's/^/+/' < ${CURRENT_CGROUP}/cgroup.controllers \
-    #   > ${CURRENT_CGROUP}/cgroup.subtree_control
+    # sed -e 's/ / +/g' -e 's/^/+/' < ${CURRENT_CGROUP_PATH}/cgroup.controllers \
+    #   > ${CURRENT_CGROUP_PATH}/cgroup.subtree_control
 
-    MEMORY_OOM_GROUP="/sys/fs/cgroup/${CURRENT_CGROUP}/memory.oom.group"
+    MEMORY_OOM_GROUP="${CURRENT_CGROUP_PATH}/memory.oom.group"
     echo "Ensuring memory.oom.group is set to 0 to disable killing all processes in cgroup on OOM"
     echo "0" > "${MEMORY_OOM_GROUP}"
     echo "Current memory.oom.group value: $(cat "${MEMORY_OOM_GROUP}")"
