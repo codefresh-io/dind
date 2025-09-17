@@ -189,7 +189,23 @@ do
   fi
 
   echo "Starting dockerd rootless"
-  #dockerd ${DOCKERD_PARAMS} <&- &
+
+  if [ ! -f /sys/fs/cgroup/cgroup.controllers ]; then
+    echo "Using cgroup v1"
+  else
+    echo "Using cgroup v2"
+    CURRENT_CGROUP=$(cat /proc/self/cgroup | sed 's/0:://')
+    echo "Current cgroup: ${CURRENT_CGROUP}"
+    
+    MEMORY_OOM_GROUP_VALUE=$(cat "/sys/fs/cgroup/${CURRENT_CGROUP}/memory.oom.group")
+    echo "Current memory.oom.group value: ${MEMORY_OOM_GROUP_VALUE}"
+
+    if [[ "${MEMORY_OOM_GROUP_VALUE}" == "1" ]]; then
+      echo "Warning! memory.oom.group is set to 1 for the current cgroup, OOM events will not be handled properly by the platform. \
+Set singleProcessOOMKill=true for kubelet configuration to fix it." 1>&2;
+    fi
+  fi
+
   export DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="-p 0.0.0.0:1300:1300/tcp" # Expose rooltelsskit port
   dockerd-entrypoint.sh dockerd ${DOCKERD_PARAMS} <&- &
 
