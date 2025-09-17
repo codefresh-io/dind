@@ -211,7 +211,7 @@ do
     echo "0" > "${MEMORY_OOM_GROUP}"
     echo "Current memory.oom.group value: $(cat "${MEMORY_OOM_GROUP}")"
 
-    # Explicitly set --cgroup-parent to ensure that DinD containers do not escape the Pod container group.
+    # Explicitly set --cgroup-parent to prevent DinD containers escaping the pod cgroup on cgroup v2.
     dockerd --cgroup-parent "${CURRENT_CGROUP}/codefresh-dind" ${DOCKERD_PARAMS} <&- &
   fi
 
