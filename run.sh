@@ -195,21 +195,26 @@ do
     CURRENT_CGROUP=$(cat /proc/self/cgroup | sed 's/0:://')
     CURRENT_CGROUP_PATH="/sys/fs/cgroup/${CURRENT_CGROUP}"
     echo "Current cgroup: ${CURRENT_CGROUP}"
-    # move the processes from the root group to the /init group,
-    # otherwise writing subtree_control fails with EBUSY.
-    # An error during moving non-existent process (i.e., "cat") is ignored.
+
+    # Move the processes from the current group to the `./init` group,
+    # otherwise the current group will become of type "domain threaded",
+    # and it will not be possible to enable required controllers for DinD group.
+    # Ref: https://github.com/moby/moby/blob/38805f20f9bcc5e87869d6c79d432b166e1c88b4/hack/dind#L28-L38
     mkdir -p ${CURRENT_CGROUP_PATH}/init
     xargs -rn1 < ${CURRENT_CGROUP_PATH}/cgroup.procs > ${CURRENT_CGROUP_PATH}/init/cgroup.procs || :
-    # # enable controllers
-    # sed -e 's/ / +/g' -e 's/^/+/' < ${CURRENT_CGROUP_PATH}/cgroup.controllers \
-    #   > ${CURRENT_CGROUP_PATH}/cgroup.subtree_control
 
+    # Set `memory.oom.group=0` to disable killing all processes in cgroup at once on OOM.
+    # if all processes are killed at once, the system will not be able to detect this event;
+    # instead, we expect separate pipeline steps to be killed if total consumptions exceed limits.
     MEMORY_OOM_GROUP="${CURRENT_CGROUP_PATH}/memory.oom.group"
-    echo "Ensuring memory.oom.group is set to 0 to disable killing all processes in cgroup on OOM"
+    echo "Ensuring memory.oom.group is set to 0 to disable killing all processes in cgroup at once on OOM"
     echo "0" > "${MEMORY_OOM_GROUP}"
     echo "Current memory.oom.group value: $(cat "${MEMORY_OOM_GROUP}")"
+
+    # Explicitly set --cgroup-parent to ensure that DinD containers do not escape the Pod container group.
     dockerd --cgroup-parent "${CURRENT_CGROUP}/codefresh-dind" ${DOCKERD_PARAMS} <&- &
   fi
+
   echo "Waiting at most 20s for docker pid"
   CNT=0
   while ! test -f "${DOCKERD_PID_FILE}" || test -z "$(cat ${DOCKERD_PID_FILE})"
