@@ -187,7 +187,34 @@ do
   fi
 
   echo "Starting dockerd"
-  dockerd ${DOCKERD_PARAMS} <&- &
+  if [ ! -f /sys/fs/cgroup/cgroup.controllers ]; then
+    echo "Using cgroup v1"
+    dockerd ${DOCKERD_PARAMS} <&- &
+  else
+    echo "Using cgroup v2"
+    CURRENT_CGROUP=$(cat /proc/self/cgroup | sed 's/0:://')
+    CURRENT_CGROUP_PATH="/sys/fs/cgroup/${CURRENT_CGROUP}"
+    echo "Current cgroup: ${CURRENT_CGROUP}"
+
+    # Move the processes from the current group to the `./init` group,
+    # otherwise the current group will become of type "domain threaded",
+    # and it will not be possible to enable required controllers for DinD group.
+    # Ref: https://github.com/moby/moby/blob/38805f20f9bcc5e87869d6c79d432b166e1c88b4/hack/dind#L28-L38
+    mkdir -p ${CURRENT_CGROUP_PATH}/init
+    xargs -rn1 < ${CURRENT_CGROUP_PATH}/cgroup.procs > ${CURRENT_CGROUP_PATH}/init/cgroup.procs || :
+
+    # Set `memory.oom.group=0` to disable killing all processes in cgroup at once on OOM.
+    # if all processes are killed at once, the system will not be able to detect this event;
+    # instead, we expect separate pipeline steps to be killed if total consumptions exceed limits.
+    MEMORY_OOM_GROUP="${CURRENT_CGROUP_PATH}/memory.oom.group"
+    echo "Ensuring memory.oom.group is set to 0 to disable killing all processes in cgroup at once on OOM"
+    echo "0" > "${MEMORY_OOM_GROUP}"
+    echo "Current memory.oom.group value: $(cat "${MEMORY_OOM_GROUP}")"
+
+    # Explicitly set --cgroup-parent to prevent DinD containers escaping the pod cgroup on cgroup v2.
+    dockerd --cgroup-parent "${CURRENT_CGROUP}/codefresh-dind" ${DOCKERD_PARAMS} <&- &
+  fi
+
   echo "Waiting at most 20s for docker pid"
   CNT=0
   while ! test -f "${DOCKERD_PID_FILE}" || test -z "$(cat ${DOCKERD_PID_FILE})"
