@@ -189,7 +189,18 @@ do
   fi
 
   echo "Starting dockerd rootless"
-  #dockerd ${DOCKERD_PARAMS} <&- &
+
+  if [ ! -f /sys/fs/cgroup/cgroup.controllers ]; then
+    echo "Using cgroup v1"
+  else
+    echo "Using cgroup v2"
+    CURRENT_CGROUP=$(cat /proc/self/cgroup | sed 's/0:://')
+    CURRENT_CGROUP_PATH="/sys/fs/cgroup/${CURRENT_CGROUP}"
+    echo "Current cgroup: ${CURRENT_CGROUP}"
+    MEMORY_OOM_GROUP="${CURRENT_CGROUP_PATH}/memory.oom.group"
+    echo "Current memory.oom.group value: $(cat "${MEMORY_OOM_GROUP}")"
+  fi
+
   export DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="-p 0.0.0.0:1300:1300/tcp" # Expose rooltelsskit port
   dockerd-entrypoint.sh dockerd ${DOCKERD_PARAMS} <&- &
 
