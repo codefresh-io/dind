@@ -30,6 +30,8 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.22/main' >> /etc/apk/repositor
   && apk add bash fuse-overlayfs jq --no-cache \
   # Needed only for `update-alternatives` below
   && apk add dpkg --no-cache \
+  # A security fix till it's fixed in base dind image (CR-31906)
+  && apk add git --no-cache --upgrade \
   && rm -rf /var/cache/apk/*
 
 # Backward compatibility with kernels that do not support `iptables-nft`. Check #CR-23033 for details.
