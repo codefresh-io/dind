@@ -35,6 +35,8 @@ RUN echo -en "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpi
   && apk add slirp4netns --no-cache \
   # Needed only for `update-alternatives` below
   && apk add dpkg --no-cache \
+  # A security fix till it's fixed in base dind image (CR-31906)
+  && apk add git --no-cache --upgrade \
   && rm /usr/local/bin/vpnkit \
   && rm -rf /var/cache/apk/*
 
