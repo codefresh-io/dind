@@ -1,4 +1,4 @@
-ARG DOCKER_VERSION=28.5.2
+ARG DOCKER_VERSION=29.1.2
 
 
 # dind-cleaner
