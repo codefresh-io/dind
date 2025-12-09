@@ -35,6 +35,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.22/main' >> /etc/apk/repositor
 
 # Main
 FROM docker:${DOCKER_VERSION}-dind AS prod
+RUN apk add readline
 COPY --from=dependencies /bin/bash /bin/bash
 COPY --from=dependencies /usr/bin/fuse-overlayfs /usr/bin/fuse-overlayfs
 COPY --from=dependencies /usr/bin/jq /usr/bin/jq
