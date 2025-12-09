@@ -2,7 +2,7 @@ ARG DOCKER_VERSION=29.1.2
 
 
 # dind-cleaner
-FROM golang:1.25-alpine3.22 AS cleaner
+FROM golang:1.25-alpine3.23 AS cleaner
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
 RUN go mod tidy
@@ -13,7 +13,7 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd && \
 
 
 # bbolt
-FROM golang:1.25-alpine3.22 AS bbolt
+FROM golang:1.25-alpine3.23 AS bbolt
 RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 
