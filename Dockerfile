@@ -15,7 +15,7 @@ RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 
 # Main
-FROM docker:28.5.2-dind AS prod
+FROM docker:29.1.2-dind AS prod
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.23/main' >> /etc/apk/repositories \
   && apk upgrade && apk add --no-cache \
     bash \
