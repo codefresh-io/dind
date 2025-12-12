@@ -1,3 +1,6 @@
+# CI relies on this ARG. Don't remove or rename it
+ARG DOCKER_VERSION=28.5.2
+
 # dind-cleaner
 FROM golang:1.25-alpine3.23 AS cleaner
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
@@ -15,7 +18,7 @@ RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 
 # Main
-FROM docker:28.5.2-dind-rootless
+FROM docker:${DOCKER_VERSION}-dind-rootless
 USER root
 RUN chown -R $(id -u rootless) /var /run /lib /home /etc/ssl /etc/apk
 # Add community for fuse-overlayfs
