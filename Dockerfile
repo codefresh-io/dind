@@ -30,7 +30,8 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.23/main' >> /etc/apk/repositor
 # Backward compatibility with kernels that do not support `iptables-nft`. Check #CR-23033 for details.
 RUN update-alternatives --install $(which iptables) iptables $(which iptables-legacy) 10 \
   && update-alternatives --install $(which ip6tables) ip6tables $(which ip6tables-legacy) 10
-COPY --from=quay.io/prometheus/node-exporter:v1.10.2 /bin/node_exporter /bin/
+# DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
+COPY --from=docker.io/octopusdeploy/dhi-node-exporter:1.10.2 /usr/local/bin/node_exporter /bin/
 COPY --from=bbolt /go/bin/bbolt /bin/
 COPY --from=cleaner /usr/local/bin/dind-cleaner /bin/
 
