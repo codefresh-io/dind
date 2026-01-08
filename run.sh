@@ -212,7 +212,7 @@ do
     echo "Current memory.oom.group value: $(cat "${MEMORY_OOM_GROUP}")"
 
     # Explicitly set --cgroup-parent to prevent DinD containers escaping the pod cgroup on cgroup v2.
-    dockerd --cgroup-parent "${CURRENT_CGROUP}/codefresh-dind" ${DOCKERD_PARAMS} <&- &
+    dockerd --feature containerd-snapshotter=false --cgroup-parent "${CURRENT_CGROUP}/codefresh-dind" ${DOCKERD_PARAMS} <&- &
   fi
 
   echo "Waiting at most 20s for docker pid"
