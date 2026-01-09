@@ -36,7 +36,8 @@ RUN echo -en "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpi
 RUN update-alternatives --install $(which iptables) iptables $(which iptables-legacy) 10 \
   && update-alternatives --install $(which ip6tables) ip6tables $(which ip6tables-legacy) 10
 ENV DOCKERD_ROOTLESS_ROOTLESSKIT_NET=slirp4netns
-COPY --from=quay.io/prometheus/node-exporter:v1.10.2 /bin/node_exporter /bin/
+# DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
+COPY --from=docker.io/octopusdeploy/dhi-node-exporter:1.10.2 /usr/local/bin/node_exporter /bin/
 COPY --from=bbolt /go/bin/bbolt /bin/
 COPY --from=cleaner /usr/local/bin/dind-cleaner /bin/
 WORKDIR /dind
