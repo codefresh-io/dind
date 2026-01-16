@@ -207,7 +207,7 @@ Set singleProcessOOMKill=true for kubelet configuration to fix it." 1>&2;
   fi
 
   export DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="-p 0.0.0.0:1300:1300/tcp" # Expose rooltelsskit port
-  dockerd-entrypoint.sh dockerd ${DOCKERD_PARAMS} <&- &
+  dockerd-entrypoint.sh dockerd --feature containerd-snapshotter=false ${DOCKERD_PARAMS} <&- &
 
   echo "Waiting at most 20s for docker pid"
   CNT=0
