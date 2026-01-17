@@ -26,7 +26,8 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.23/main' >> /etc/apk/repositor
     fuse-overlayfs \
     jq \
     # Needed only for `update-alternatives` below
-    dpkg
+    dpkg \
+    git
 # Backward compatibility with kernels that do not support `iptables-nft`. Check #CR-23033 for details.
 RUN update-alternatives --install $(which iptables) iptables $(which iptables-legacy) 10 \
   && update-alternatives --install $(which ip6tables) ip6tables $(which ip6tables-legacy) 10
