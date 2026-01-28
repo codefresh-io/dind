@@ -1,5 +1,5 @@
 # CI relies on this ARG. Don't remove or rename it
-ARG DOCKER_VERSION=29.1.4
+ARG DOCKER_VERSION=29.2.0
 
 # dind-cleaner
 FROM golang:1.25-alpine3.23 AS cleaner
@@ -31,7 +31,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.23/main' >> /etc/apk/repositor
 RUN update-alternatives --install $(which iptables) iptables $(which iptables-legacy) 10 \
   && update-alternatives --install $(which ip6tables) ip6tables $(which ip6tables-legacy) 10
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
-COPY --from=docker.io/octopusdeploy/dhi-node-exporter:1.10.2 /usr/local/bin/node_exporter /bin/
+COPY --from=docker.io/octopusdeploy/dhi-node-exporter:1.10.2@sha256:d8f7da5fb79a2df6dc449eec10ad786a02169c45d081730252b162d072a52eb3 /usr/local/bin/node_exporter /bin/
 COPY --from=bbolt /go/bin/bbolt /bin/
 COPY --from=cleaner /usr/local/bin/dind-cleaner /bin/
 
