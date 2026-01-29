@@ -133,10 +133,6 @@ if [[ -n "${USE_DIND_IMAGES_LIB}" && "${USE_DIND_IMAGES_LIB}" != "false" ]]; the
 fi
 echo "DOCKERD_PARAMS = ${DOCKERD_PARAMS}"
 
-# Starting monitor
-${DIR}/monitor/start.sh  <&- &
-MONITOR_PID=$!
-
 ### start docker with retry
 DOCKERD_PID_FILE=/var/run/docker.pid
 DOCKERD_PID_MAXWAIT=${DOCKERD_PID_MAXWAIT:-20}
@@ -200,8 +196,11 @@ do
     # otherwise the current group will become of type "domain threaded",
     # and it will not be possible to enable required controllers for DinD group.
     # Ref: https://github.com/moby/moby/blob/38805f20f9bcc5e87869d6c79d432b166e1c88b4/hack/dind#L28-L38
+    echo "Creating init cgroup ${CURRENT_CGROUP_PATH}/init"
     mkdir -p ${CURRENT_CGROUP_PATH}/init
+    echo "Moving existing processes from ${CURRENT_CGROUP_PATH} to ${CURRENT_CGROUP_PATH}/init"
     xargs -rn1 < ${CURRENT_CGROUP_PATH}/cgroup.procs > ${CURRENT_CGROUP_PATH}/init/cgroup.procs || :
+    echo "Done moving existing processes from ${CURRENT_CGROUP_PATH} to ${CURRENT_CGROUP_PATH}/init"
 
     # Set `memory.oom.group=0` to disable killing all processes in cgroup at once on OOM.
     # if all processes are killed at once, the system will not be able to detect this event;
@@ -245,6 +244,10 @@ do
   echo "$(date) - dockerd has been started"
   break
 done
+
+# Starting monitor
+${DIR}/monitor/start.sh  <&- &
+MONITOR_PID=$!
 
 # Starting cleaner agent
 if [[ -z "${DISABLE_CLEANER_AGENT}" && -z "${SIGTERM}" ]]; then
