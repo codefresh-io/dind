@@ -214,7 +214,7 @@ do
 
   echo "Starting dockerd"
   if [ ! -f /sys/fs/cgroup/cgroup.controllers ]; then
-    dockerd ${DOCKERD_PARAMS} <&- &
+    dockerd --feature containerd-snapshotter=false ${DOCKERD_PARAMS} <&- &
   else
     # Explicitly set --cgroup-parent to prevent DinD containers escaping the pod cgroup on cgroup v2.
     dockerd --feature containerd-snapshotter=false --cgroup-parent "${CURRENT_CGROUP}/codefresh-dind" ${DOCKERD_PARAMS} <&- &
