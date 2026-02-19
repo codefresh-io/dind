@@ -44,10 +44,6 @@ ADD . /dind
 RUN chown -R $(id -u rootless) /dind
 RUN chown -R $(id -u rootless) /var/run
 RUN chown -R $(id -u rootless) /etc/ssl && chmod 777 -R /etc/ssl
-
-RUN echo "1000:200000:65536" >> /etc/subuid
-RUN echo "1000:200000:65536" >> /etc/subgid
-
 USER rootless
 RUN rm -i -f /var/run && ln -s /run/user/1000 /var/run
 
