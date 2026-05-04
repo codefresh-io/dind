@@ -2,7 +2,7 @@
 ARG DOCKER_VERSION=29.4.1
 
 # dind-cleaner
-FROM golang:1.25-alpine3.23 AS cleaner
+FROM golang:1.26-alpine3.23 AS cleaner
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
 RUN go mod tidy
