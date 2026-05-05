@@ -2,7 +2,7 @@
 ARG DOCKER_VERSION=29.4.1
 
 # dind-cleaner
-FROM golang:1.25-alpine3.23 AS cleaner
+FROM golang:1.26-alpine3.23 AS cleaner
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
 RUN go mod tidy
@@ -13,7 +13,7 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd \
 
 
 # bbolt
-FROM golang:1.25-alpine3.23 AS bbolt
+FROM golang:1.26-alpine3.23 AS bbolt
 RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 
@@ -37,7 +37,7 @@ RUN update-alternatives --install $(which iptables) iptables $(which iptables-le
   && update-alternatives --install $(which ip6tables) ip6tables $(which ip6tables-legacy) 10
 ENV DOCKERD_ROOTLESS_ROOTLESSKIT_NET=slirp4netns
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
-COPY --from=docker.io/octopusdeploy/dhi-node-exporter:1.11.0-alpine3.23@sha256:0354dfb8ecb38d3678e554e25f6d7fdcee0e38bdedcfdda85e46e094a498dda4 /usr/bin/node_exporter /bin/
+COPY --from=docker.io/octopusdeploy/dhi-node-exporter:1.11.1-alpine3.23@sha256:8cd8b3f56f6c319a03c7a2224e99d07e34241ae9ced308df5a6fee41d61ea905 /usr/bin/node_exporter /bin/
 COPY --from=bbolt /go/bin/bbolt /bin/
 COPY --from=cleaner /usr/local/bin/dind-cleaner /bin/
 WORKDIR /dind
