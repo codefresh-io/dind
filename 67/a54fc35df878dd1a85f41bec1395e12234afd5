@@ -1,0 +1,14 @@
+run.sh
+  h_bdc637847e5b6a 256-257,260-265,267
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "67a54fc35df878dd1a85f41bec1395e12234afd5",
+  "prompts": {},
+  "humans": {
+    "h_bdc637847e5b6a": {
+      "author": "Mikhail Klimko <mikhail.klimko@octopus.com>"
+    }
+  }
+}
