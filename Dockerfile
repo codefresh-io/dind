@@ -16,6 +16,11 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd \
 FROM golang:1.26-alpine3.23 AS bbolt
 RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
+FROM quay.io/skopeo/stable:latest AS preloaded-images
+RUN mkdir -p /images \
+  && skopeo copy --additional-tag quay.io/codefresh/cf-docker-builder:1.6.1 \
+       docker://quay.io/codefresh/cf-docker-builder:1.6.1 \
+       docker-archive:/images/cf-docker-builder.tar:quay.io/codefresh/cf-docker-builder:1.6.1
 
 # Main
 FROM docker:${DOCKER_VERSION}-dind AS prod
@@ -30,10 +35,13 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.23/main' >> /etc/apk/repositor
 # Backward compatibility with kernels that do not support `iptables-nft`. Check #CR-23033 for details.
 RUN update-alternatives --install $(which iptables) iptables $(which iptables-legacy) 10 \
   && update-alternatives --install $(which ip6tables) ip6tables $(which ip6tables-legacy) 10
-# DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
+  # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
 COPY --from=docker.io/octopusdeploy/dhi-node-exporter:1.11.1-alpine3.23@sha256:8cd8b3f56f6c319a03c7a2224e99d07e34241ae9ced308df5a6fee41d61ea905 /usr/bin/node_exporter /bin/
 COPY --from=bbolt /go/bin/bbolt /bin/
 COPY --from=cleaner /usr/local/bin/dind-cleaner /bin/
+
+# Bake in preloaded image tarballs
+COPY --from=preloaded-images /images /preloaded-images
 
 WORKDIR /dind
 ADD . /dind

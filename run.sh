@@ -251,6 +251,19 @@ do
   break
 done
 
+# Load preloaded images (alpine, busybox, cf-docker-builder, etc.)
+if [ -d /preloaded-images ] && [ -n "$(ls -A /preloaded-images 2>/dev/null)" ]; then
+  echo "$(date) - Loading preloaded images from /preloaded-images"
+  for tar in /preloaded-images/*.tar; do
+    [ -f "$tar" ] || continue
+    echo "Loading $tar ..."
+    if ! docker load -i "$tar"; then
+      echo "WARNING: failed to load $tar"
+    fi
+  done
+  echo "$(date) - Finished loading preloaded images"
+fi
+
 # Starting monitor
 ${DIR}/monitor/start.sh  <&- &
 MONITOR_PID=$!
