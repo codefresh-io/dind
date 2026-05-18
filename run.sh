@@ -251,6 +251,23 @@ do
   break
 done
 
+# Load preloaded images
+if [ -d /preloaded-images ] && [ -n "$(ls -A /preloaded-images 2>/dev/null)" ]; then
+  echo "$(date) - Loading preloaded images (parallel)"
+  pids=""
+  for tar in /preloaded-images/*.tar; do
+    [ -f "$tar" ] || continue
+    (
+      echo "Loading $tar ..."
+      docker load -i "$tar" >/dev/null 2>&1 \
+        || echo "WARNING: failed to load $tar"
+    ) &
+    pids="$pids $!"
+  done
+  for pid in $pids; do wait "$pid"; done
+  echo "$(date) - Finished loading preloaded images"
+fi
+
 # Starting monitor
 ${DIR}/monitor/start.sh  <&- &
 MONITOR_PID=$!
