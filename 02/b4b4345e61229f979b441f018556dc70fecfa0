@@ -1,0 +1,18 @@
+run.sh
+  h_bdc637847e5b6a 254-266
+service.yaml
+  h_bdc637847e5b6a 1
+Dockerfile
+  h_bdc637847e5b6a 19-23,43-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "02b4b4345e61229f979b441f018556dc70fecfa0",
+  "prompts": {},
+  "humans": {
+    "h_bdc637847e5b6a": {
+      "author": "Mikhail Klimko <mikhail.klimko@octopus.com>"
+    }
+  }
+}
