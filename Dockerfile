@@ -16,11 +16,10 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd \
 FROM golang:1.26-alpine3.23 AS bbolt
 RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
-FROM quay.io/skopeo/stable:latest AS preloaded-images
-RUN mkdir -p /images \
-  && skopeo copy --additional-tag quay.io/codefresh/cf-docker-builder:1.6.1 \
-       docker://quay.io/codefresh/cf-docker-builder:1.6.1 \
-       docker-archive:/images/cf-docker-builder.tar:quay.io/codefresh/cf-docker-builder:1.6.1
+FROM quay.io/containers/skopeo:v1.22.2 AS preloaded-images
+COPY images-list.txt /images-list.txt
+COPY load-images.sh /load-images.sh
+RUN chmod +x /load-images.sh && /load-images.sh /images-list.txt /images
 
 # Main
 FROM docker:${DOCKER_VERSION}-dind AS prod
