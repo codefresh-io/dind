@@ -1,5 +1,5 @@
 # CI relies on this ARG. Don't remove or rename it
-ARG DOCKER_VERSION=29.4.1
+ARG DOCKER_VERSION=29.5.2
 
 # dind-cleaner
 FROM golang:1.26-alpine3.23 AS cleaner
@@ -30,7 +30,6 @@ RUN echo -en "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpi
   && apk add dpkg --no-cache \
   # A security fix till it's fixed in base dind image (CR-31906)
   && apk add git --no-cache --upgrade \
-  && rm /usr/local/bin/vpnkit \
   && rm -rf /var/cache/apk/*
 # Backward compatibility with kernels that do not support `iptables-nft`. Check #CR-23033 for details.
 RUN update-alternatives --install $(which iptables) iptables $(which iptables-legacy) 10 \
