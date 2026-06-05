@@ -1,5 +1,5 @@
 # CI relies on this ARG. Don't remove or rename it
-ARG DOCKER_VERSION=29.4.1
+ARG DOCKER_VERSION=29.5.2
 
 # dind-cleaner
 FROM golang:1.26-alpine3.23 AS cleaner
