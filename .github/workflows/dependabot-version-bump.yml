@@ -1,0 +1,38 @@
+name: Auto bump patch version for dependabot PRs
+
+# Bumps the "version" field in service.yaml (patch increment) whenever a PR
+# with the "dependabot" label is opened or has the label added.
+#
+# The new version is always computed relative to the PR's target (base) branch,
+# so re-labelling never stacks bumps — the result is always base + 1 patch.
+
+on:
+  pull_request:
+    types: [opened, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-version:
+    if: contains(github.event.pull_request.labels.*.name, 'dependabot')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve PR branches
+        id: pr
+        run: |
+          echo "head=${{ github.event.pull_request.head.ref }}" >> "$GITHUB_OUTPUT"
+          echo "base=${{ github.event.pull_request.base.ref }}" >> "$GITHUB_OUTPUT"
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Bump patch version
+        uses: ./.github/actions/bump-version
+        with:
+          bump: patch
+          base: ${{ steps.pr.outputs.base }}
+          head: ${{ steps.pr.outputs.head }}
+          pr: ${{ github.event.pull_request.number }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
