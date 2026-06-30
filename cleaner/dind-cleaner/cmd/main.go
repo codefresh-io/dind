@@ -18,14 +18,13 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"flag"
-	"github.com/docker/docker/api/types/image"
 	"os"
 	"time"
 
-	"github.com/docker/docker/client"
 	"github.com/golang/glog"
-	"golang.org/x/net/context"
+	"github.com/moby/moby/client"
 )
 
 func readFileLines(path string) ([]string, error) {
@@ -75,7 +74,7 @@ func cleanImages(retainedImagesList []string, retainPeriod int64) {
 		os.Setenv("DOCKER_API_VERSION", "1.35")
 	}
 
-	cli, err := client.NewClientWithOpts(
+	cli, err := client.New(
 		client.FromEnv,
 	)
 	if err != nil {
@@ -106,17 +105,17 @@ func cleanImages(retainedImagesList []string, retainPeriod int64) {
 
 	// 1. Get All Images
 	ctx := context.Background()
-	imagesFullList, err := cli.ImageList(ctx, image.ListOptions{All: true})
+	imagesFullList, err := cli.ImageList(ctx, client.ImageListOptions{All: true})
 	if err != nil {
 		panic(err)
 	}
 
-	glog.Infof("Found %d images in docker", len(imagesFullList))
+	glog.Infof("Found %d images in docker", len(imagesFullList.Items))
 
 	currentTs := time.Now().Unix()
 	// 2. fill map of imageToCleanStruct
 	images := make(map[string]*imageToCleanStruct)
-	for _, img := range imagesFullList {
+	for _, img := range imagesFullList.Items {
 		images[img.ID] = &imageToCleanStruct{
 			ID:          img.ID,
 			Created:     img.Created,
@@ -176,7 +175,7 @@ func cleanImages(retainedImagesList []string, retainPeriod int64) {
 				// add image delete here
 				var err error
 				if !*dryRun {
-					_, err = cli.ImageRemove(ctx, imageID, image.RemoveOptions{Force: true, PruneChildren: false})
+					_, err = cli.ImageRemove(ctx, imageID, client.ImageRemoveOptions{Force: true, PruneChildren: false})
 				} else {
 					glog.Infof("DRY RUN - do not actually delete")
 				}
