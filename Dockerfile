@@ -1,8 +1,8 @@
 # CI relies on this ARG. Don't remove or rename it
-ARG DOCKER_VERSION=29.6.0
+ARG DOCKER_VERSION=29.6.1
 
-# dind-cleaner
-FROM golang:1.26-alpine3.24 AS cleaner
+# DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
+FROM octopusdeploy/dhi-golang:1.26-alpine3.24-dev@sha256:e48a91483983467f426cae8656aa16be252c6f2e290125e10db01259352a54ca AS cleaner
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
 RUN go mod tidy
@@ -12,12 +12,15 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd \
   && rm -rf /go/*
 
 
-# bbolt
-FROM golang:1.26-alpine3.24 AS bbolt
+# DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
+FROM octopusdeploy/dhi-golang:1.26-alpine3.24-dev@sha256:e48a91483983467f426cae8656aa16be252c6f2e290125e10db01259352a54ca AS bbolt
 RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 
-# Main
+# DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
+FROM octopusdeploy/dhi-node-exporter:1.11.1-alpine3.23@sha256:8cd8b3f56f6c319a03c7a2224e99d07e34241ae9ced308df5a6fee41d61ea905 AS node-exporter
+
+
 FROM docker:${DOCKER_VERSION}-dind AS prod
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.24/main' >> /etc/apk/repositories \
   && apk upgrade && apk add --no-cache \
@@ -30,12 +33,9 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.24/main' >> /etc/apk/repositor
 # Backward compatibility with kernels that do not support `iptables-nft`. Check #CR-23033 for details.
 RUN update-alternatives --install $(which iptables) iptables $(which iptables-legacy) 10 \
   && update-alternatives --install $(which ip6tables) ip6tables $(which ip6tables-legacy) 10
-# DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
-COPY --from=docker.io/octopusdeploy/dhi-node-exporter:1.11.1-alpine3.23@sha256:7d2ec764517c233918d46e6da50128ac9ebc7ec3f0bbcf6846042de67cb22757 /usr/bin/node_exporter /bin/
+COPY --from=node-exporter /usr/bin/node_exporter /bin/
 COPY --from=bbolt /go/bin/bbolt /bin/
 COPY --from=cleaner /usr/local/bin/dind-cleaner /bin/
-
 WORKDIR /dind
 ADD . /dind
-
 ENTRYPOINT ["./run.sh"]
