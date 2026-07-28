@@ -1,6 +1,3 @@
-# CI relies on this ARG. Don't remove or rename it
-ARG DOCKER_VERSION=29.6.1
-
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
 FROM octopusdeploy/dhi-golang:1.26-alpine3.24-dev@sha256:29fe0a7d2a5ab0c236fbde3a7f63801755585ed260b6f2f564e831c92bfa9f34 AS cleaner
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
@@ -21,7 +18,7 @@ RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:e77ce1d3ff7a7dfb56dfda8f6485a14f8ab6aecb2d85fa37c6a2fdf41f71ed83 AS node-exporter
 
 
-FROM docker:${DOCKER_VERSION}-dind AS prod
+FROM docker:29.6.1-dind@sha256:66d292e5c26bd33a6f6f61cacb880de2186339a524ecba1ce098dbbaceed6515 AS prod
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.24/main' >> /etc/apk/repositories \
   && apk upgrade && apk add --no-cache \
     bash \
