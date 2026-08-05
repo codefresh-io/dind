@@ -71,7 +71,7 @@ func _stringInList(list []string, s string) bool {
 func cleanImages(retainedImagesList []string, retainPeriod int64) {
 	glog.Infof("Entering cleanImages, length of retainedImagesList = %d", len(retainedImagesList))
 	if os.Getenv("DOCKER_API_VERSION") == "" {
-		os.Setenv("DOCKER_API_VERSION", "1.35")
+		os.Setenv("DOCKER_API_VERSION", "1.40")
 	}
 
 	cli, err := client.New(
