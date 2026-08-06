@@ -1,5 +1,5 @@
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
-FROM octopusdeploy/dhi-golang:1.26-alpine3.24-dev@sha256:29fe0a7d2a5ab0c236fbde3a7f63801755585ed260b6f2f564e831c92bfa9f34 AS cleaner
+FROM octopusdeploy/dhi-golang:1.26-alpine3.24-dev@sha256:753793e50e16daafaf70566409c752ed05f177fb34ad5b488918bbccae462413 AS cleaner
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
 RUN go mod tidy
@@ -10,7 +10,7 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd \
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
-FROM octopusdeploy/dhi-golang:1.26-alpine3.24-dev@sha256:29fe0a7d2a5ab0c236fbde3a7f63801755585ed260b6f2f564e831c92bfa9f34 AS bbolt
+FROM octopusdeploy/dhi-golang:1.26-alpine3.24-dev@sha256:753793e50e16daafaf70566409c752ed05f177fb34ad5b488918bbccae462413 AS bbolt
 RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 
@@ -18,13 +18,13 @@ RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:e77ce1d3ff7a7dfb56dfda8f6485a14f8ab6aecb2d85fa37c6a2fdf41f71ed83 AS node-exporter
 
 
-FROM docker:29.6.1-dind-rootless@sha256:371962f4344295a1eb185f1c9e62064bf4503a7beb8c6e73be3405500041784b
+FROM docker:29.6.2-dind-rootless@sha256:212a9e782c7119fd6a212beaab6b7665a29b663d894d0f6201710c89575ad0ae
 USER root
 RUN chown -R $(id -u rootless) /var /run /lib /home /etc/ssl /etc/apk
-# Add community for fuse-overlayfs
-RUN echo -en "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpine-release)/main\nhttps://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpine-release)/community" > /etc/apk/repositories \
+# Add community for fuse-overlayfs and edge for jq
+RUN echo -en "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpine-release)/main\nhttps://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpine-release)/community\n@edge https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories \
   && apk upgrade \
-  && apk add bash jq fuse-overlayfs --no-cache \
+  && apk add bash jq@edge fuse-overlayfs --no-cache \
   && apk add slirp4netns --no-cache \
   # Needed only for `update-alternatives` below
   && apk add dpkg --no-cache \
