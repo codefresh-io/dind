@@ -18,7 +18,7 @@ RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:e77ce1d3ff7a7dfb56dfda8f6485a14f8ab6aecb2d85fa37c6a2fdf41f71ed83 AS node-exporter
 
 
-FROM docker:29.6.2-dind@sha256:bfec1f5159c63a81ca6fdedbd81404d2c0e16378ed0feec3bb3fbf3998847659 AS prod
+FROM docker:29.7.1-dind@sha256:e8faad5a8dc5279dff929afc5449f2791736912fff9f99351d742db2fad01b4c AS prod
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.24/main' >> /etc/apk/repositories \
   && echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories \
   && apk upgrade && apk add --no-cache \
