@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/golang/glog v1.2.5
-	github.com/moby/moby/client v0.5.0
+	github.com/moby/moby/client v0.5.1
 )
 
 require (
