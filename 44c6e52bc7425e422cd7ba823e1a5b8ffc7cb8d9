@@ -1,0 +1,19 @@
+Dockerfile
+  s_80fe8ccaf53b24::t_d430ee4c72f44b 24-25,27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "44c6e52bc7425e422cd7ba823e1a5b8ffc7cb8d9",
+  "prompts": {},
+  "sessions": {
+    "s_80fe8ccaf53b24": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6300ffee-0c86-42c2-b4db-1e759092591c",
+        "model": "claude-sonnet-4-20250514"
+      },
+      "human_author": "andrii-codefresh <andrii@codefresh.io>"
+    }
+  }
+}
