@@ -1,5 +1,5 @@
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
-FROM octopusdeploy/dhi-golang:1.26-alpine3.24-dev@sha256:753793e50e16daafaf70566409c752ed05f177fb34ad5b488918bbccae462413 AS cleaner
+FROM octopusdeploy/dhi-golang:1.26-alpine3.24-dev@sha256:b8c24c4df0722866243706e44f4c622e1487f1272d7f9ea89944f6832f9cc801 AS cleaner
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
 RUN go mod tidy
@@ -10,12 +10,12 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd \
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
-FROM octopusdeploy/dhi-golang:1.26-alpine3.24-dev@sha256:753793e50e16daafaf70566409c752ed05f177fb34ad5b488918bbccae462413 AS bbolt
+FROM octopusdeploy/dhi-golang:1.26-alpine3.24-dev@sha256:b8c24c4df0722866243706e44f4c622e1487f1272d7f9ea89944f6832f9cc801 AS bbolt
 RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
-FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:e77ce1d3ff7a7dfb56dfda8f6485a14f8ab6aecb2d85fa37c6a2fdf41f71ed83 AS node-exporter
+FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:a8514c8552a97e97b2f8134a13cfd374e080909b6ae56bd8751183908630b9c7 AS node-exporter
 
 
 FROM docker:29.7.1-dind@sha256:e8faad5a8dc5279dff929afc5449f2791736912fff9f99351d742db2fad01b4c AS prod
@@ -28,6 +28,11 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.24/main' >> /etc/apk/repositor
     jq@edge \
     # Needed only for `update-alternatives` below
     dpkg
+# CVE-2026-17106 (GHSA-hfg8-hc9c-6c3h): the bundled buildx plugin is linked against
+# github.com/moby/go-archive < 0.3.0 and no upstream buildx release ships the fix yet.
+# The plugin is unused here (this image only runs the daemon + cleaner/monitor scripts),
+# so drop it. Revisit once a buildx release with go-archive >= 0.3.0 lands in the base image.
+RUN rm -f /usr/local/libexec/docker/cli-plugins/docker-buildx
 # Backward compatibility with kernels that do not support `iptables-nft`. Check #CR-23033 for details.
 RUN update-alternatives --install $(which iptables) iptables $(which iptables-legacy) 10 \
   && update-alternatives --install $(which ip6tables) ip6tables $(which ip6tables-legacy) 10
