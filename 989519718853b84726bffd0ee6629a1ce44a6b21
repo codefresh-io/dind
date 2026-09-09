@@ -1,0 +1,16 @@
+Dockerfile
+  h_86ffe77adf8985 31-35
+service.yaml
+  h_86ffe77adf8985 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "989519718853b84726bffd0ee6629a1ce44a6b21",
+  "prompts": {},
+  "humans": {
+    "h_86ffe77adf8985": {
+      "author": "andrii-codefresh <andrii@codefresh.io>"
+    }
+  }
+}
