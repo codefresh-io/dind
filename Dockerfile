@@ -1,5 +1,5 @@
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
-FROM octopusdeploy/dhi-golang:1.27-alpine3.24-dev@sha256:19b188d9533719b78143b1a6d64a064a39a614cbb0275274855829f3c49abe6c AS cleaner
+FROM octopusdeploy/dhi-golang:1.27-alpine3.24-dev@sha256:c98d8594257a3686505216f95efd480dbe9128990fa31919e751944369c8e2e5 AS cleaner
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
 RUN go mod tidy
@@ -10,15 +10,15 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd \
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
-FROM octopusdeploy/dhi-golang:1.27-alpine3.24-dev@sha256:19b188d9533719b78143b1a6d64a064a39a614cbb0275274855829f3c49abe6c AS bbolt
+FROM octopusdeploy/dhi-golang:1.27-alpine3.24-dev@sha256:c98d8594257a3686505216f95efd480dbe9128990fa31919e751944369c8e2e5 AS bbolt
 RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
-FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:a8514c8552a97e97b2f8134a13cfd374e080909b6ae56bd8751183908630b9c7 AS node-exporter
+FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:9abca9855c8933b4d5b24c03db39063f94290b1c2660008f917386a164529ac9 AS node-exporter
 
 
-FROM docker:29.7.2-dind@sha256:3ef33f2e220b79ed3ef3b99d81746f06f306cd6340e2cb7331d17ae996e74cb6 AS prod
+FROM docker:29.8.0-dind@sha256:5efed980cba3fc126cf54e21a5a6ff8849d05b6e0623d6e7612f48e9cd6cd17e AS prod
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.24/main' >> /etc/apk/repositories \
   && echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories \
   && apk upgrade && apk add --no-cache \
