@@ -22,6 +22,7 @@ clean_metrics(){
   [[ -f ${CLEANER_AGENT_ACTIONS_VOLUMES_FILE} ]] && rm -fv ${CLEANER_AGENT_ACTIONS_VOLUMES_FILE}
   [[ -f ${CLEANER_AGENT_ACTIONS_IMAGES_FILE} ]] && rm -fv ${CLEANER_AGENT_ACTIONS_IMAGES_FILE}
   [[ -f ${CLEANER_AGENT_ACTIONS_PURGES_FILE} ]] && rm -fv ${CLEANER_AGENT_ACTIONS_PURGES_FILE}
+  [[ -f ${CLEANER_AGENT_ACTIONS_VOLUME_PURGES_FILE} ]] && rm -fv ${CLEANER_AGENT_ACTIONS_VOLUME_PURGES_FILE}
 }
 
 sigterm_trap(){
@@ -46,6 +47,7 @@ CLEANER_AGENT_ACTIONS_CONTAINERS=0
 CLEANER_AGENT_ACTIONS_VOLUMES=0
 CLEANER_AGENT_ACTIONS_IMAGES=0
 CLEANER_AGENT_ACTIONS_PURGES=0
+CLEANER_AGENT_ACTIONS_VOLUME_PURGES=0
 clean_metrics
 
 while true
@@ -101,6 +103,19 @@ do
     echo $CLEANER_AGENT_ACTIONS_PURGES > ${CLEANER_AGENT_ACTIONS_PURGES_FILE}
     echo "docker pull pulling quay.io/codefresh/fs-ops"
     docker pull quay.io/codefresh/fs-ops
+    unlock_file
+    display_df
+  fi
+  [[ -n "${EXIT}" ]] && break
+
+  if [[ -n $(need_to_clean) ]]; then
+    echo "$0: CLEANER_AGENT: NEEED TO PURGE - purging unused volumes"
+    display_df
+    lock_file
+    purge_unused_volumes
+    (( CLEANER_AGENT_ACTIONS_VOLUME_PURGES ++ ))
+    echo "$0: CLEANER_AGENT_ACTIONS_VOLUME_PURGES=$CLEANER_AGENT_ACTIONS_VOLUME_PURGES, updating metric file ${CLEANER_AGENT_ACTIONS_VOLUME_PURGES_FILE}"
+    echo $CLEANER_AGENT_ACTIONS_VOLUME_PURGES > ${CLEANER_AGENT_ACTIONS_VOLUME_PURGES_FILE}
     unlock_file
     display_df
   fi
