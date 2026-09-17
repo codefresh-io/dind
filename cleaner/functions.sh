@@ -45,7 +45,7 @@ check_disk_usage_threshold(){
 }
 
 check_inodes_usage_threshold(){
-  local THRESHOLD=${1:-${DISK_USAGE_THRESHOLD}}
+  local THRESHOLD=${1:-${INODES_USAGE_THRESHOLD}}
    df -iP ${DOCKERD_DATA_ROOT} | awk -v T=${THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
 }
 
