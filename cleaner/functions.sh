@@ -188,3 +188,17 @@ clean_images(){
 
   dind-cleaner images --retained-images-file ${RETAINED_IMAGES_FILE} --image-retain-period ${IMAGE_RETAIN_PERIOD}
 }
+
+purge_unused_volumes(){
+  echo -e "\n############# Purging unused Volumes ############# - $(date) "
+  # Last-resort step: clean_volumes() above skips anything touched within VOLUMES_RETAIN_PERIOD,
+  # so a burst of activity can pin inode usage above threshold for the rest of a pod's lifetime.
+  # docker volume prune only removes volumes not referenced by any container, so it never
+  # touches volumes still attached to a running build - safe to run unconditionally here.
+  if [[ -n "${CLEANER_DRY_RUN}" ]]; then
+    echo "Running in DRY_RUN, just display prune command"
+    echo docker volume prune --force
+  else
+    docker volume prune --force
+  fi
+}

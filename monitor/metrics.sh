@@ -17,6 +17,7 @@ LAST_PRUNED_TS_FILE=${DIND_VOLUME_STAT_DIR}/last_pruned_ts
 CLEANER_AGENT_ACTIONS_CONTAINERS_FILE=${DIND_VOLUME_STAT_DIR}/cleaner_agent_actions_containers
 CLEANER_AGENT_ACTIONS_VOLUMES_FILE=${DIND_VOLUME_STAT_DIR}/cleaner_agent_actions_volumes
 CLEANER_AGENT_ACTIONS_IMAGES_FILE=${DIND_VOLUME_STAT_DIR}/cleaner_agent_actions_images
+CLEANER_AGENT_ACTIONS_VOLUME_PURGES_FILE=${DIND_VOLUME_STAT_DIR}/cleaner_agent_actions_volume_purges
 
 echo "Started $0 at $(date)
 METRIC_FILE=${METRIC_FILE}
@@ -149,6 +150,16 @@ EOF
 # TYPE docker_volume_cleaner_agent_actions_purges gauge
 # HELP docker_volume_cleaner_agent_actions_purges docker purges done by cleaner_agent.sh
 docker_volume_cleaner_agent_actions_purges{$LABELS} ${CLEANER_AGENT_ACTIONS_PURGES}
+
+EOF
+  fi
+
+  if [[ -f ${CLEANER_AGENT_ACTIONS_VOLUME_PURGES_FILE} ]]; then
+     CLEANER_AGENT_ACTIONS_VOLUME_PURGES=$(cat ${CLEANER_AGENT_ACTIONS_VOLUME_PURGES_FILE})
+     cat <<EOF >> $METRIC_FILE_TMP
+# TYPE docker_volume_cleaner_agent_actions_volume_purges gauge
+# HELP docker_volume_cleaner_agent_actions_volume_purges unused volume prunes done by cleaner_agent.sh
+docker_volume_cleaner_agent_actions_volume_purges{$LABELS} ${CLEANER_AGENT_ACTIONS_VOLUME_PURGES}
 
 EOF
   fi
