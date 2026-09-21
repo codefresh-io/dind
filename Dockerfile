@@ -15,7 +15,7 @@ RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
-FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:a8514c8552a97e97b2f8134a13cfd374e080909b6ae56bd8751183908630b9c7 AS node-exporter
+FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:9abca9855c8933b4d5b24c03db39063f94290b1c2660008f917386a164529ac9 AS node-exporter
 
 
 FROM docker:29.7.2-dind-rootless@sha256:ec3201de648f98b94882e4dd8a3d30df8b3ca6723a242fab76150f25127e194e
