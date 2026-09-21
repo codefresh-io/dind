@@ -1,5 +1,5 @@
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
-FROM octopusdeploy/dhi-golang:1.27-alpine3.24-dev@sha256:19b188d9533719b78143b1a6d64a064a39a614cbb0275274855829f3c49abe6c AS cleaner
+FROM octopusdeploy/dhi-golang:1.27-alpine3.24-dev@sha256:47e6ff9623d7f90f2f6e1cd4b0fb129775d8c26e599c4d5da4d66fae1438181d AS cleaner
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
 RUN go mod tidy
@@ -10,7 +10,7 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd \
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
-FROM octopusdeploy/dhi-golang:1.27-alpine3.24-dev@sha256:19b188d9533719b78143b1a6d64a064a39a614cbb0275274855829f3c49abe6c AS bbolt
+FROM octopusdeploy/dhi-golang:1.27-alpine3.24-dev@sha256:47e6ff9623d7f90f2f6e1cd4b0fb129775d8c26e599c4d5da4d66fae1438181d AS bbolt
 RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 
