@@ -30,6 +30,11 @@ RUN echo -en "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpi
   && apk add dpkg --no-cache \
   # A security fix till it's fixed in base dind image (CR-31906)
   && apk add git --no-cache --upgrade \
+  # CVE-2026-59995: the base image's openssh-client-default (sftp client) is 10.3_p1,
+  # vulnerable to a path traversal that lets a malicious/compromised sftp server write
+  # files outside the download directory. Fixed upstream in OpenSSH 10.4p1; not yet in
+  # v3.24 main, so pull the patched build (10.5_p1) from edge.
+  && apk add openssh-client-default@edge --no-cache --upgrade \
   && rm -rf /var/cache/apk/*
   # CVE-2026-17106 (GHSA-hfg8-hc9c-6c3h): the bundled buildx plugin is linked against
   # github.com/moby/go-archive < 0.3.0 and no upstream buildx release ships the fix yet.
