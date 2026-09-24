@@ -1,5 +1,5 @@
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
-FROM octopusdeploy/dhi-golang:1.27-alpine3.24-dev@sha256:19b188d9533719b78143b1a6d64a064a39a614cbb0275274855829f3c49abe6c AS cleaner
+FROM octopusdeploy/dhi-golang:1.27-alpine3.24-dev@sha256:c98d8594257a3686505216f95efd480dbe9128990fa31919e751944369c8e2e5 AS cleaner
 COPY cleaner/dind-cleaner/* /go/src/github.com/codefresh-io/dind-cleaner/
 WORKDIR /go/src/github.com/codefresh-io/dind-cleaner/
 RUN go mod tidy
@@ -10,15 +10,15 @@ RUN CGO_ENABLED=0 go build -o /usr/local/bin/dind-cleaner ./cmd \
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
-FROM octopusdeploy/dhi-golang:1.27-alpine3.24-dev@sha256:19b188d9533719b78143b1a6d64a064a39a614cbb0275274855829f3c49abe6c AS bbolt
+FROM octopusdeploy/dhi-golang:1.27-alpine3.24-dev@sha256:c98d8594257a3686505216f95efd480dbe9128990fa31919e751944369c8e2e5 AS bbolt
 RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
-FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:a8514c8552a97e97b2f8134a13cfd374e080909b6ae56bd8751183908630b9c7 AS node-exporter
+FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:9abca9855c8933b4d5b24c03db39063f94290b1c2660008f917386a164529ac9 AS node-exporter
 
 
-FROM docker:29.7.2-dind-rootless@sha256:ec3201de648f98b94882e4dd8a3d30df8b3ca6723a242fab76150f25127e194e
+FROM docker:29.8.1-dind-rootless@sha256:1f029db43a32fbb1465fe8ff4327d405154876946986170e97d7861232a8227a
 USER root
 RUN chown -R $(id -u rootless) /var /run /lib /home /etc/ssl /etc/apk
 # Add community for fuse-overlayfs and edge for jq
