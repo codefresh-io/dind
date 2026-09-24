@@ -26,6 +26,8 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.24/main' >> /etc/apk/repositor
     # Add fuse-overlayfs for compatibility with rootless. Volumes created with rootless might use fuse-overlay formatted volumes. If those volumes are later used by dind that runs with root it'll require fuse-overlay to be able to read the volume
     fuse-overlayfs \
     jq@edge \
+    # CVE-2026-59995, CVE-2026-59996: openssh-client fix (>=10.4) isn't backported to v3.24/main yet, only in edge
+    openssh-client-default@edge \
     # Needed only for `update-alternatives` below
     dpkg
 # CVE-2026-17106 (GHSA-hfg8-hc9c-6c3h): the bundled buildx plugin is linked against
