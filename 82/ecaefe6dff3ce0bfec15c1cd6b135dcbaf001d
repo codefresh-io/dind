@@ -1,0 +1,14 @@
+Dockerfile
+  h_51acfbafc7319b 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "82ecaefe6dff3ce0bfec15c1cd6b135dcbaf001d",
+  "prompts": {},
+  "humans": {
+    "h_51acfbafc7319b": {
+      "author": "vitaliichyrka <vitalii.chyrka@codefresh.io>"
+    }
+  }
+}
