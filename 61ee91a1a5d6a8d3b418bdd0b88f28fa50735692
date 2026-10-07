@@ -1,0 +1,16 @@
+Dockerfile
+  h_eda8e5529fa171 5
+cleaner/dind-cleaner/go.mod
+  h_eda8e5529fa171 3,6,8,13,18,26,30-32,34-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "61ee91a1a5d6a8d3b418bdd0b88f28fa50735692",
+  "prompts": {},
+  "humans": {
+    "h_eda8e5529fa171": {
+      "author": "Zhenya Tikhonov"
+    }
+  }
+}

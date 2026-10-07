@@ -1,0 +1,33 @@
+cleaner/dind-cleaner/go.mod
+  s_875aa5fb12ae47::t_a41d69cff5f6fe 7,22
+cleaner/dind-cleaner/cmd/main.go
+  s_875aa5fb12ae47::t_4f2bc2928cf0f8 108,113
+  s_875aa5fb12ae47::t_12d19bcad21c09 178
+  h_5d50a600ff410d 27
+  s_875aa5fb12ae47::t_43fb3beebc2b86 77
+  s_875aa5fb12ae47::t_cd1249ddd8562d 21
+  s_875aa5fb12ae47::t_861e9b215b00e4 118
+cleaner/dind-cleaner/go.sum
+  s_875aa5fb12ae47::t_b7c3c50c42d5a7 32-35,64-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "e04ecf3ad403e0f45225fce7fe23cffe6c32742c",
+  "prompts": {},
+  "humans": {
+    "h_5d50a600ff410d": {
+      "author": "Zhenya Tikhonov <zhenya.tikhonov@codefresh.io>"
+    }
+  },
+  "sessions": {
+    "s_875aa5fb12ae47": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "150d6aa1-27f8-4f0b-bd22-abc89c325fa9",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Zhenya Tikhonov <zhenya.tikhonov@codefresh.io>"
+    }
+  }
+}

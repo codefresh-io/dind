@@ -1,0 +1,14 @@
+Dockerfile
+  h_86ffe77adf8985 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "b5914f359deb8330710e7aa50ba82e71fd920f33",
+  "prompts": {},
+  "humans": {
+    "h_86ffe77adf8985": {
+      "author": "andrii-codefresh <andrii@codefresh.io>"
+    }
+  }
+}

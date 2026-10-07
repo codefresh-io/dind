@@ -1,0 +1,19 @@
+Dockerfile
+  s_6550d1cb3237d3::t_c986287da1d195 33-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1e316624f4e57169a912d9b5fa49d85568939a40",
+  "prompts": {},
+  "sessions": {
+    "s_6550d1cb3237d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1e665f36-3b74-416a-b756-3696a100f075",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Alina <alina.shportiuk@codefresh.io>"
+    }
+  }
+}

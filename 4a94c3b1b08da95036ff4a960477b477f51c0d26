@@ -1,0 +1,16 @@
+Dockerfile
+  h_9fd7d1a18c4091 2,13,18,21,34-38
+service.yaml
+  h_9fd7d1a18c4091 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "4a94c3b1b08da95036ff4a960477b477f51c0d26",
+  "prompts": {},
+  "humans": {
+    "h_9fd7d1a18c4091": {
+      "author": "Alina <alina.shportiuk@codefresh.io>"
+    }
+  }
+}

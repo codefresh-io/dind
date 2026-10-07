@@ -1,0 +1,20 @@
+Dockerfile
+  s_57ac956cc51905::t_90f37975bef3c5 31-34
+  s_57ac956cc51905::t_667381bcb4452a 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "c6492f70aa12bd560134fb8caa8c3a865665b285",
+  "prompts": {},
+  "sessions": {
+    "s_57ac956cc51905": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1c560b0f-fc74-4957-ac92-ae4c7cef1b66",
+        "model": "claude-opus-5"
+      },
+      "human_author": "andrii-codefresh <andrii@codefresh.io>"
+    }
+  }
+}

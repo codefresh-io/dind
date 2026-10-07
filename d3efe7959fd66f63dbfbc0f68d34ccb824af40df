@@ -1,0 +1,14 @@
+service.yaml
+  h_104939d4aa3383 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "d3efe7959fd66f63dbfbc0f68d34ccb824af40df",
+  "prompts": {},
+  "humans": {
+    "h_104939d4aa3383": {
+      "author": "Vasil Sudakou <vasil.sudakov@codefresh.io>"
+    }
+  }
+}

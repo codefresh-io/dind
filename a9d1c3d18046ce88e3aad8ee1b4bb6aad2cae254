@@ -1,0 +1,18 @@
+images-list.txt
+  h_bdc637847e5b6a 1-10
+Dockerfile
+  h_bdc637847e5b6a 19-22
+load-images.sh
+  h_bdc637847e5b6a 1-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "a9d1c3d18046ce88e3aad8ee1b4bb6aad2cae254",
+  "prompts": {},
+  "humans": {
+    "h_bdc637847e5b6a": {
+      "author": "Mikhail Klimko <mikhail.klimko@octopus.com>"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+.github/dependabot.yml
+  h_5d50a600ff410d 1-57
+Dockerfile
+  h_5d50a600ff410d 4-5,15-16,20-23,25,36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "33164268a76b6ec590aa9b70ca9fc32251833db5",
+  "prompts": {},
+  "humans": {
+    "h_5d50a600ff410d": {
+      "author": "Zhenya Tikhonov <zhenya.tikhonov@codefresh.io>"
+    }
+  }
+}
