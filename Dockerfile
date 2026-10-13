@@ -18,16 +18,13 @@ RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:9abca9855c8933b4d5b24c03db39063f94290b1c2660008f917386a164529ac9 AS node-exporter
 
 
-FROM docker:29.8.2-dind@sha256:7dcdfc4a20246236f558175182ccace1eb15a41bd3eb119dd2284f393498b7c1 AS prod
+FROM docker:29.9.0-dind@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470 AS prod
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.24/main' >> /etc/apk/repositories \
-  && echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories \
   && apk upgrade && apk add --no-cache \
     bash \
     # Add fuse-overlayfs for compatibility with rootless. Volumes created with rootless might use fuse-overlay formatted volumes. If those volumes are later used by dind that runs with root it'll require fuse-overlay to be able to read the volume
     fuse-overlayfs \
-    jq@edge \
-    # CVE-2026-59995, CVE-2026-59996: openssh-client fix (>=10.4) isn't backported to v3.24/main yet, only in edge
-    openssh-client-default@edge \
+    jq \
     # Needed only for `update-alternatives` below
     dpkg
 # CVE-2026-17106 (GHSA-hfg8-hc9c-6c3h): the bundled buildx plugin is linked against
