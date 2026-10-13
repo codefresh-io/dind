@@ -1,0 +1,17 @@
+cleaner/dind-cleaner/go.mod
+  h_51acfbafc7319b 7
+  h_51acfbafc7319b 16
+cleaner/dind-cleaner/go.sum
+  h_51acfbafc7319b 13-14,34-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "58bde6a9252b5da82591aa3b8f60f4df1b2f0504",
+  "prompts": {},
+  "humans": {
+    "h_51acfbafc7319b": {
+      "author": "vitaliichyrka <vitalii.chyrka@codefresh.io>"
+    }
+  }
+}
