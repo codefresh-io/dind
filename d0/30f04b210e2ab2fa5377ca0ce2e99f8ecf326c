@@ -1,0 +1,27 @@
+Dockerfile
+  h_51acfbafc7319b 21
+  s_f38a2fed4fcf60::t_4e4e24bac84cbd 24-25,27
+service.yaml
+  h_51acfbafc7319b 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d030f04b210e2ab2fa5377ca0ce2e99f8ecf326c",
+  "prompts": {},
+  "humans": {
+    "h_51acfbafc7319b": {
+      "author": "vitaliichyrka <vitalii.chyrka@codefresh.io>"
+    }
+  },
+  "sessions": {
+    "s_f38a2fed4fcf60": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "997bf8ce-0d78-41f9-8eda-1e354ed04bcf",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "vitaliichyrka <vitalii.chyrka@codefresh.io>"
+    }
+  }
+}
