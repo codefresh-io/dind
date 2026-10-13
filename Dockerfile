@@ -18,23 +18,16 @@ RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:9abca9855c8933b4d5b24c03db39063f94290b1c2660008f917386a164529ac9 AS node-exporter
 
 
-FROM docker:29.8.2-dind-rootless@sha256:3acba49741f1aedb28125ffb2307faaec8e870ebb9343de41c21ac549bd6abf0
+FROM docker:29.9.0-dind-rootless@sha256:54155db4950e2f9af3bb829fcfe627030576fc7ae235018be63175fca7326171
 USER root
 RUN chown -R $(id -u rootless) /var /run /lib /home /etc/ssl /etc/apk
-# Add community for fuse-overlayfs and edge for jq
-RUN echo -en "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpine-release)/main\nhttps://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpine-release)/community\n@edge https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories \
+# Add community for fuse-overlayfs
+RUN echo -en "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpine-release)/main\nhttps://dl-cdn.alpinelinux.org/alpine/v$(cut -d'.' -f1,2 /etc/alpine-release)/community" > /etc/apk/repositories \
   && apk upgrade \
-  && apk add bash jq@edge fuse-overlayfs --no-cache \
+  && apk add bash jq fuse-overlayfs --no-cache \
   && apk add slirp4netns --no-cache \
   # Needed only for `update-alternatives` below
   && apk add dpkg --no-cache \
-  # A security fix till it's fixed in base dind image (CR-31906)
-  && apk add git --no-cache --upgrade \
-  # CVE-2026-59995: the base image's openssh-client-default (sftp client) is 10.3_p1,
-  # vulnerable to a path traversal that lets a malicious/compromised sftp server write
-  # files outside the download directory. Fixed upstream in OpenSSH 10.4p1; not yet in
-  # v3.24 main, so pull the patched build (10.5_p1) from edge.
-  && apk add openssh-client-default@edge --no-cache --upgrade \
   && rm -rf /var/cache/apk/*
   # CVE-2026-17106 (GHSA-hfg8-hc9c-6c3h): the bundled buildx plugin is linked against
   # github.com/moby/go-archive < 0.3.0 and no upstream buildx release ships the fix yet.
