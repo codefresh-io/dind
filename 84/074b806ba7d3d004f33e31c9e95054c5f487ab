@@ -1,0 +1,19 @@
+Dockerfile
+  s_2877a276c74be0::t_c6ecc7c20fef85 2,13,21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "84074b806ba7d3d004f33e31c9e95054c5f487ab",
+  "prompts": {},
+  "sessions": {
+    "s_2877a276c74be0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2a2f5734-6e3b-4dab-81ec-d0e8a4e95f1f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "vitaliichyrka <vitalii.chyrka@codefresh.io>"
+    }
+  }
+}
