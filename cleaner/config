@@ -7,6 +7,13 @@ VOLUMES_RETAIN_PERIOD=${VOLUMES_RETAIN_PERIOD:-259200}
 DISK_USAGE_THRESHOLD=${DISK_USAGE_THRESHOLD:-0.8}
 INODES_USAGE_THRESHOLD=${INODES_USAGE_THRESHOLD:-0.8}
 
+# Thresholds used by cleaner-agent.sh's continuous, mid-build loop. Kept separate (and higher by
+# default) from DISK_USAGE_THRESHOLD/INODES_USAGE_THRESHOLD above so it only steps in once the
+# pre-build docker-clean.sh pass wasn't enough, but still overridable via the Runtime Environment
+# spec like every other threshold here.
+CLEANER_AGENT_DISK_USAGE_THRESHOLD=${CLEANER_AGENT_DISK_USAGE_THRESHOLD:-0.9}
+CLEANER_AGENT_INODES_USAGE_THRESHOLD=${CLEANER_AGENT_INODES_USAGE_THRESHOLD:-0.9}
+
 #### Defining DIND_VOLUME_STAT dir and stat files
 DOCKERD_DATA_ROOT=${DOCKERD_DATA_ROOT:-/var/lib/docker}
 DIND_VOLUME_STAT_DIR=${DIND_VOLUME_STAT_DIR:-${DOCKERD_DATA_ROOT}/dind-volume}

@@ -40,13 +40,13 @@ display_df(){
 }
 
 check_disk_usage_threshold(){
-  local THRESHOLD=${1:-${DISK_USAGE_THRESHOLD}}
-  df -P ${DOCKERD_DATA_ROOT} | awk -v T=${THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
+  local disk_usage_threshold=${1:-${DISK_USAGE_THRESHOLD}}
+  df -P ${DOCKERD_DATA_ROOT} | awk -v T=${disk_usage_threshold} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
 }
 
 check_inodes_usage_threshold(){
-  local THRESHOLD=${1:-${DISK_USAGE_THRESHOLD}}
-   df -iP ${DOCKERD_DATA_ROOT} | awk -v T=${THRESHOLD} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
+  local inodes_usage_threshold=${1:-${INODES_USAGE_THRESHOLD}}
+  df -iP ${DOCKERD_DATA_ROOT} | awk -v T=${inodes_usage_threshold} 'NR==2 {print ( $3 / $2  > T ) ? "1": "0" }'
 }
 
 clean_temporary_objects(){

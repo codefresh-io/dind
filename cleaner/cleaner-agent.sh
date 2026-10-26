@@ -4,8 +4,6 @@
 # examining usage threshold
 # 
 echo "$0: - Entering at $(date) "
-START_DISK_USAGE_THRESHOLD=0.9
-START_INODES_USAGE_THRESHOLD=0.9
 
 DIR=$(dirname ${BASH_SOURCE})
 
@@ -33,8 +31,8 @@ sigterm_trap(){
 trap sigterm_trap SIGTERM SIGINT
 
 need_to_clean() {
-  IS_DISK_USAGE_THRESHOLD=$(check_disk_usage_threshold ${START_DISK_USAGE_THRESHOLD})
-  IS_INODES_USAGE_THRESHOLD=$(check_inodes_usage_threshold ${START_INODES_USAGE_THRESHOLD})
+  IS_DISK_USAGE_THRESHOLD=$(check_disk_usage_threshold ${CLEANER_AGENT_DISK_USAGE_THRESHOLD})
+  IS_INODES_USAGE_THRESHOLD=$(check_inodes_usage_threshold ${CLEANER_AGENT_INODES_USAGE_THRESHOLD})
   if [[ ${IS_DISK_USAGE_THRESHOLD} == 1 || ${IS_INODES_USAGE_THRESHOLD} == 1 ]]; then
       echo 1
   fi

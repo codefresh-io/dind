@@ -17,12 +17,22 @@ To determine what to delete we will use information stored in /var/lib/docker/di
 
   IMAGE_RETAIN_PERIOD - we will not delete images if they have events since `current_timestamp - IMAGE_RETAIN_PERIOD` (default 3d)
   VOLUMES_RETAIN_PERIOD - we will not delete volumes if they have events since `current_timestamp - IMAGE_RETAIN_PERIOD` (default 3d)
-  
+
+  DISK_USAGE_THRESHOLD - docker-clean.sh (pre-build) launches a clean if current disk usage exceeds this (default 0.8)
+  INODES_USAGE_THRESHOLD - docker-clean.sh (pre-build) launches a clean if current inode usage exceeds this (default 0.8)
+
+  CLEANER_AGENT_DISK_USAGE_THRESHOLD - cleaner-agent.sh's continuous, mid-build loop launches a clean if current disk usage exceeds this (default 0.9)
+  CLEANER_AGENT_INODES_USAGE_THRESHOLD - cleaner-agent.sh's continuous, mid-build loop launches a clean if current inode usage exceeds this (default 0.9)
+
 ####### defaults:
   CLEAN_PERIOD_SECONDS=${CLEAN_PERIOD_SECONDS:-21600} # 6 hours
   CLEAN_PERIOD_BUILDS=${CLEAN_PERIOD_BUILDS:-10}
   IMAGE_RETAIN_PERIOD=${IMAGE_RETAIN_PERIOD:-259200}
   VOLUMES_RETAIN_PERIOD=${VOLUMES_RETAIN_PERIOD:-259200}
+  DISK_USAGE_THRESHOLD=${DISK_USAGE_THRESHOLD:-0.8}
+  INODES_USAGE_THRESHOLD=${INODES_USAGE_THRESHOLD:-0.8}
+  CLEANER_AGENT_DISK_USAGE_THRESHOLD=${CLEANER_AGENT_DISK_USAGE_THRESHOLD:-0.9}
+  CLEANER_AGENT_INODES_USAGE_THRESHOLD=${CLEANER_AGENT_INODES_USAGE_THRESHOLD:-0.9}
   
 ##### Logic:
 - save current docker events by `docker events --until 0s -f ${EVENT_FORMAT} > /var/lib/docker/dind-volume/events/$(date +%s)`
