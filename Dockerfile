@@ -19,6 +19,12 @@ FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:43cad5165557ceb58d
 
 
 FROM octopusdeploy/dhi-docker-dind:29.9.3-alpine3.24-dev@sha256:95beada1f836f524baaa0f497b5b66c4cf2a62f5a117d74688bb5b9052d8c0cf AS prod
+# The DHI image ships dind's modprobe wrapper at /usr/bin/modprobe, so the wrapper's final
+# `exec modprobe` (with /usr/local stripped from PATH) resolves to itself and loops forever.
+# Restore the upstream layout: wrapper in /usr/local/bin, real busybox modprobe on the fallback PATH.
+RUN rm /usr/local/bin/modprobe \
+  && mv /usr/bin/modprobe /usr/local/bin/modprobe \
+  && ln -s /bin/busybox /usr/bin/modprobe
 RUN echo 'https://dl-cdn.alpinelinux.org/alpine/v3.24/community' >> /etc/apk/repositories \
   && apk upgrade && apk add --no-cache \
     bash \
