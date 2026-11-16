@@ -18,7 +18,7 @@ RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:43cad5165557ceb58d3ea4ef6f67398b90893c3e68b811fca2aadec6c2fc2cb5 AS node-exporter
 
 
-FROM docker:29.9.3-dind-rootless@sha256:sha256:707a099b8ddd86306eb28c8b1775264a3ee0135b16dc505b7b48ffb328edf8d0
+FROM docker:29.9.3-dind-rootless@sha256:707a099b8ddd86306eb28c8b1775264a3ee0135b16dc505b7b48ffb328edf8d0
 USER root
 RUN chown -R $(id -u rootless) /var /run /lib /home /etc/ssl /etc/apk
 # Add community for fuse-overlayfs
