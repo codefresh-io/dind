@@ -1,0 +1,28 @@
+Dockerfile
+  s_c626f236ea5e85::t_b2a448b9290364 31,33,43-46,48,50,61-62
+  s_c626f236ea5e85::t_b76e422056113e 30,32
+  s_c626f236ea5e85::t_4b3dd7148f4097 49
+  s_c626f236ea5e85::t_dcd8f3e5ee01c4 70
+  s_c626f236ea5e85::t_fde303b9a7876d 2-5,15,23-29,34-39,41-42,47,51-54,65-69,71-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1e952b3c15226f2cd39f020dda08a8cef88ecc23",
+  "prompts": {},
+  "humans": {
+    "h_5d50a600ff410d": {
+      "author": "Zhenya Tikhonov <zhenya.tikhonov@codefresh.io>"
+    }
+  },
+  "sessions": {
+    "s_c626f236ea5e85": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7ba9fced-41d3-4ce2-9b20-cbf89ed93960",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Zhenya Tikhonov <zhenya.tikhonov@codefresh.io>"
+    }
+  }
+}
