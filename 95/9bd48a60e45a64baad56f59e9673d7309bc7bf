@@ -1,0 +1,16 @@
+Dockerfile
+  h_5d50a600ff410d 21
+service.yaml
+  h_5d50a600ff410d 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "959bd48a60e45a64baad56f59e9673d7309bc7bf",
+  "prompts": {},
+  "humans": {
+    "h_5d50a600ff410d": {
+      "author": "Zhenya Tikhonov <zhenya.tikhonov@codefresh.io>"
+    }
+  }
+}
