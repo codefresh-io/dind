@@ -25,7 +25,9 @@ FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:43cad5165557ceb58d
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-docker-dind
-FROM octopusdeploy/dhi-docker-dind:29-alpine3.24_dind-test-zhenya@sha256:7e161c1edbabea43a59178550ca37e3b2acdb1be9aa8e66cf9d35aa07567300e AS prod
+FROM octopusdeploy/dhi-docker-dind:29.10.0-alpine_cf-classic-dind@sha256:c2d9e554f161383a7fbeb9f40bb5d00b4f91a94eb798c17ca087fb9ba65c193a AS prod
+# DHI images declare no volumes. Without one the data root sits on the container's overlay filesystem, where overlay2 cannot be mounted.
+VOLUME /var/lib/docker
 # The DHI image ships dind's modprobe wrapper at /usr/bin/modprobe, so the wrapper's final
 # `exec modprobe` (with /usr/local stripped from PATH) resolves to itself and loops forever.
 # This restores the upstream layout: wrapper in /usr/local/bin, real busybox modprobe on the fallback PATH.
