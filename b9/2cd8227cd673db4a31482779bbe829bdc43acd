@@ -1,0 +1,26 @@
+cleaner/functions.sh
+  s_abaf6368687fd9::t_a1fceb1100017e 164
+cleaner/docker-clean-sigterm.sh
+  s_abaf6368687fd9::t_a1fceb1100017e 221
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b92cd8227cd673db4a31482779bbe829bdc43acd",
+  "prompts": {},
+  "humans": {
+    "h_5d50a600ff410d": {
+      "author": "Zhenya Tikhonov <zhenya.tikhonov@codefresh.io>"
+    }
+  },
+  "sessions": {
+    "s_abaf6368687fd9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2738aab-4a11-4366-86a0-24858a547b31",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zhenya Tikhonov <zhenya.tikhonov@codefresh.io>"
+    }
+  }
+}
