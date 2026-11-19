@@ -1,0 +1,26 @@
+cleaner/dind-cleaner/go.mod
+  h_5d50a600ff410d 3,7,11,18-19,22,26-31
+cleaner/dind-cleaner/go.sum
+  s_abaf6368687fd9::t_4cdea58aeb7f58 1-2,15-16,18-19,30-33,38-39,42-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7d1e0f1a50b2b28cd70e9b98a1a3f553976070e2",
+  "prompts": {},
+  "humans": {
+    "h_5d50a600ff410d": {
+      "author": "Zhenya Tikhonov <zhenya.tikhonov@codefresh.io>"
+    }
+  },
+  "sessions": {
+    "s_abaf6368687fd9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2738aab-4a11-4366-86a0-24858a547b31",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Zhenya Tikhonov <zhenya.tikhonov@codefresh.io>"
+    }
+  }
+}
