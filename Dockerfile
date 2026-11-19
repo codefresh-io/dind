@@ -30,7 +30,8 @@ RUN apk add --no-cache shadow-subids slirp4netns fuse-overlayfs
 # The runtime image has no package manager: bash, jq, rootlesskit, iproute2-minimal, fuse3, libbsd, glib
 # and libseccomp are added through DHI customization, together with the `rootless` user (uid 1000).
 # iproute2-minimal is there because rootlesskit needs `ip tuntap`, which busybox `ip` does not implement.
-FROM octopusdeploy/dhi-docker-dind:29.9-alpine3.24_test-zhenya-rootless@sha256:722c4776c992e9efeaab5b5d731e89d820097006f35244fa552b2d6c15cfee66
+FROM octopusdeploy/dhi-docker-dind:29.10.0-alpine_cf-classic-dind-rootless@sha256:c3bd1a1e4638a53c6802ab530209825a4d19d07d181aa7aca77684ea97532882
+USER root
 # The DHI image ships dind's modprobe wrapper at /usr/bin/modprobe, so the wrapper's final
 # `exec modprobe` (with /usr/local stripped from PATH) resolves to itself and loops forever.
 # Restore the upstream layout: wrapper in /usr/local/bin, real busybox modprobe on the fallback PATH.
