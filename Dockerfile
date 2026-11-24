@@ -51,7 +51,7 @@ RUN echo 'rootless:100000:65536' >> /etc/subuid \
 VOLUME /home/rootless/.local/share/docker
 # setuid instead of the file capabilities the Alpine package sets, because those do not survive every builder's COPY.
 COPY --from=rootless-extras --chmod=4755 /usr/bin/newuidmap /usr/bin/newgidmap /usr/bin/
-COPY --from=rootless-extras /usr/lib/libsubid.so.5 /usr/lib/libslirp.so.0 /usr/lib/
+COPY --from=rootless-extras /usr/lib/libslirp.so.0 /usr/lib/
 COPY --from=rootless-extras /usr/bin/slirp4netns /usr/bin/fuse-overlayfs /usr/bin/
 ENV DOCKERD_ROOTLESS_ROOTLESSKIT_NET=slirp4netns
 COPY --from=node-exporter /usr/bin/node_exporter /bin/
