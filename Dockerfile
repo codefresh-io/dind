@@ -1,5 +1,5 @@
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
-FROM octopusdeploy/dhi-golang:1.27-alpine3.24-dev@sha256:72cac473a0b802b521e23a2aed591ad166645729533d6d3db4ce96ae22c697ff AS golang
+FROM octopusdeploy/dhi-golang:1.27.4-alpine3.24-dev@sha256:f5765dcea1354da7d6b6e12eb84949fed6336dc9c022edc49af932be879f71c0 AS golang
 
 
 FROM golang AS cleaner
@@ -21,11 +21,11 @@ RUN apk add --no-cache fuse-overlayfs
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
-FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:43cad5165557ceb58d3ea4ef6f67398b90893c3e68b811fca2aadec6c2fc2cb5 AS node-exporter
+FROM octopusdeploy/dhi-node-exporter:1.13.1-alpine3.24@sha256:7f7dc3854a9fd6b908908f1c36b12ba03836662a9bc1259427583390c09f17de AS node-exporter
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-docker-dind
-FROM octopusdeploy/dhi-docker-dind:29.10.0-alpine_cf-classic-dind@sha256:c2d9e554f161383a7fbeb9f40bb5d00b4f91a94eb798c17ca087fb9ba65c193a AS prod
+FROM octopusdeploy/dhi-docker-dind:29.10.0-alpine_cf-classic-dind@sha256:2f9c74fbd53fadb2c92a72e3baf9d9d0840734b2e2b467729f33f016cee0fb1a AS prod
 # DHI images declare no volumes. Without one the data root sits on the container's overlay filesystem, where overlay2 cannot be mounted.
 VOLUME /var/lib/docker
 # The DHI image ships dind's modprobe wrapper at /usr/bin/modprobe, so the wrapper's final
