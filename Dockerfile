@@ -1,5 +1,5 @@
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
-FROM octopusdeploy/dhi-golang:1.27.3-alpine3.24-dev@sha256:72cac473a0b802b521e23a2aed591ad166645729533d6d3db4ce96ae22c697ff AS golang
+FROM octopusdeploy/dhi-golang:1.27.4-alpine3.24-dev@sha256:f5765dcea1354da7d6b6e12eb84949fed6336dc9c022edc49af932be879f71c0 AS golang
 
 
 FROM golang AS cleaner
@@ -17,7 +17,7 @@ RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
-FROM octopusdeploy/dhi-node-exporter:1.12.1-alpine3.24@sha256:43cad5165557ceb58d3ea4ef6f67398b90893c3e68b811fca2aadec6c2fc2cb5 AS node-exporter
+FROM octopusdeploy/dhi-node-exporter:1.13.1-alpine3.24@sha256:7f7dc3854a9fd6b908908f1c36b12ba03836662a9bc1259427583390c09f17de AS node-exporter
 
 
 # The DHI customization catalogue only offers packages from the DHI and Alpine `main` repositories,
@@ -30,7 +30,7 @@ RUN apk add --no-cache shadow-subids slirp4netns fuse-overlayfs
 # The runtime image has no package manager: bash, jq, rootlesskit, iproute2-minimal, fuse3, libbsd, glib
 # and libseccomp are added through DHI customization, together with the `rootless` user (uid 1000).
 # iproute2-minimal is there because rootlesskit needs `ip tuntap`, which busybox `ip` does not implement.
-FROM octopusdeploy/dhi-docker-dind:29.10.0-alpine_cf-classic-dind-rootless@sha256:c3bd1a1e4638a53c6802ab530209825a4d19d07d181aa7aca77684ea97532882
+FROM octopusdeploy/dhi-docker-dind:29.10.0-alpine_cf-classic-dind-rootless@sha256:2f1288f8483aa74a59df9248b9859c3ab74c38b3d828cb6cbd082850771d6079 AS prod
 USER root
 # The DHI image ships dind's modprobe wrapper at /usr/bin/modprobe, so the wrapper's final
 # `exec modprobe` (with /usr/local stripped from PATH) resolves to itself and loops forever.
