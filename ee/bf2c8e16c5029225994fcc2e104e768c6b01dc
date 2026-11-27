@@ -1,0 +1,21 @@
+cleaner/dind-cleaner/go.mod
+  h_5d50a600ff410d 25
+.github/dependabot.yml
+  h_5d50a600ff410d 55
+Dockerfile
+  h_5d50a600ff410d 2,25-26,30
+  h_5d50a600ff410d 27-28
+cleaner/dind-cleaner/go.sum
+  h_5d50a600ff410d 40-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "eebf2c8e16c5029225994fcc2e104e768c6b01dc",
+  "prompts": {},
+  "humans": {
+    "h_5d50a600ff410d": {
+      "author": "Zhenya Tikhonov <zhenya.tikhonov@codefresh.io>"
+    }
+  }
+}
