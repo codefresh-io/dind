@@ -44,21 +44,6 @@ COPY --from=fuse-overlayfs /usr/lib/libfuse3.so.4 /usr/lib/
 COPY --from=node-exporter /usr/bin/node_exporter /bin/
 COPY --from=bbolt /go/bin/bbolt /bin/
 COPY --from=cleaner /usr/local/bin/dind-cleaner /bin/
-
-# Sanity check
-RUN bash --version \
-  && jq --version \
-  && fuse-overlayfs --version \
-  && bbolt version \
-  && node_exporter --version \
-  && dind-cleaner --help \
-  && dockerd --version \
-  && docker --version \
-  && containerd --version \
-  && runc --version \
-  && iptables --version \
-  && ip6tables --version
-
 WORKDIR /dind
 ADD . /dind
 ENTRYPOINT ["./run.sh"]

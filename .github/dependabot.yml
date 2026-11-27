@@ -52,6 +52,6 @@ updates:
       - dependency-name: "octopusdeploy/dhi-node-exporter"
         update-types:
           - version-update:semver-major
-      - dependency-name: "docker"
+      - dependency-name: "octopusdeploy/dhi-docker-dind"
         update-types:
           - version-update:semver-major
