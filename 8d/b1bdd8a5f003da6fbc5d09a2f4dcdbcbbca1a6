@@ -1,0 +1,18 @@
+Dockerfile
+  h_5d50a600ff410d 2,28
+cleaner/dind-cleaner/go.mod
+  h_5d50a600ff410d 25
+cleaner/dind-cleaner/go.sum
+  h_5d50a600ff410d 40-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8db1bdd8a5f003da6fbc5d09a2f4dcdbcbbca1a6",
+  "prompts": {},
+  "humans": {
+    "h_5d50a600ff410d": {
+      "author": "Zhenya Tikhonov <zhenya.tikhonov@codefresh.io>"
+    }
+  }
+}
