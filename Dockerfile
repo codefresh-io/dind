@@ -1,5 +1,5 @@
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
-FROM octopusdeploy/dhi-golang:1.27.4-alpine3.24-dev@sha256:f5765dcea1354da7d6b6e12eb84949fed6336dc9c022edc49af932be879f71c0 AS golang
+FROM octopusdeploy/dhi-golang:1.27.4-alpine3.24-dev@sha256:a76849b53b06b671dff57ebea6a83206c54a74e5fbd27ba365b9e2dc94a18195 AS golang
 
 
 FROM golang AS cleaner
@@ -25,7 +25,7 @@ FROM octopusdeploy/dhi-node-exporter:1.13.1-alpine3.24@sha256:7f7dc3854a9fd6b908
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-docker-dind
-FROM octopusdeploy/dhi-docker-dind:29.10.0-alpine_cf-classic-dind@sha256:2f9c74fbd53fadb2c92a72e3baf9d9d0840734b2e2b467729f33f016cee0fb1a AS prod
+FROM octopusdeploy/dhi-docker-dind:29.10.0-alpine_cf-classic-dind@sha256:bdb7474d9f33409d20b56c926237b370625f40a26d3f4793140d241c608a3d14 AS prod
 # DHI images declare no volumes. Without one the data root sits on the container's overlay filesystem, where overlay2 cannot be mounted.
 VOLUME /var/lib/docker
 # The DHI image ships dind's modprobe wrapper at /usr/bin/modprobe, so the wrapper's final
