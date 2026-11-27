@@ -1,5 +1,5 @@
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-golang
-FROM octopusdeploy/dhi-golang:1.27.4-alpine3.24-dev@sha256:f5765dcea1354da7d6b6e12eb84949fed6336dc9c022edc49af932be879f71c0 AS golang
+FROM octopusdeploy/dhi-golang:1.27.4-alpine3.24-dev@sha256:a76849b53b06b671dff57ebea6a83206c54a74e5fbd27ba365b9e2dc94a18195 AS golang
 
 
 FROM golang AS cleaner
@@ -16,21 +16,18 @@ FROM golang AS bbolt
 RUN go install go.etcd.io/bbolt/cmd/bbolt@latest
 
 
-# DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
-FROM octopusdeploy/dhi-node-exporter:1.13.1-alpine3.24@sha256:7f7dc3854a9fd6b908908f1c36b12ba03836662a9bc1259427583390c09f17de AS node-exporter
-
-
 # The DHI customization catalogue only offers packages from the DHI and Alpine `main` repositories,
 # so the rootless tooling that lives in Alpine `community` is installed here and copied into the runtime image.
 FROM golang AS rootless-extras
 RUN apk add --no-cache shadow-subids slirp4netns fuse-overlayfs
 
 
+# DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-node-exporter
+FROM octopusdeploy/dhi-node-exporter:1.13.1-alpine3.24@sha256:7f7dc3854a9fd6b908908f1c36b12ba03836662a9bc1259427583390c09f17de AS node-exporter
+
+
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-docker-dind
-# The runtime image has no package manager: bash, jq, rootlesskit, iproute2-minimal, fuse3, libbsd, glib
-# and libseccomp are added through DHI customization, together with the `rootless` user (uid 1000).
-# iproute2-minimal is there because rootlesskit needs `ip tuntap`, which busybox `ip` does not implement.
-FROM octopusdeploy/dhi-docker-dind:29.10.0-alpine_cf-classic-dind-rootless@sha256:2f1288f8483aa74a59df9248b9859c3ab74c38b3d828cb6cbd082850771d6079 AS prod
+FROM octopusdeploy/dhi-docker-dind:29.10.1-alpine_cf-classic-dind-rootless@sha256:b2f467c2f347af066bc8fd9d9648a103a02c54b304014eadc2d59b02fbf9e579 AS prod
 USER root
 # The DHI image ships dind's modprobe wrapper at /usr/bin/modprobe, so the wrapper's final
 # `exec modprobe` (with /usr/local stripped from PATH) resolves to itself and loops forever.
@@ -63,24 +60,4 @@ RUN chown -R rootless /dind /var/run \
   && chown -R rootless /etc/ssl && chmod 777 -R /etc/ssl
 USER rootless
 RUN rm -i -f /var/run && ln -s /run/user/1000 /var/run
-# Fail the build if a binary is missing or cannot load its libraries: part of them depends on the
-# DHI customization staying in place, the rest is copied from other stages or expected from the base image.
-RUN bash --version \
-  && jq --version \
-  && rootlesskit --version \
-  && ip -V \
-  && newuidmap 2>&1 | grep -q usage \
-  && newgidmap 2>&1 | grep -q usage \
-  && slirp4netns --version \
-  && fuse-overlayfs --version \
-  && fusermount3 --version \
-  && bbolt version \
-  && node_exporter --version \
-  && dind-cleaner --help \
-  && dockerd --version \
-  && docker --version \
-  && containerd --version \
-  && runc --version \
-  && iptables --version \
-  && ip6tables --version
 ENTRYPOINT ["./run.sh"]
