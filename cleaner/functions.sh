@@ -161,7 +161,7 @@ clean_images(){
      EVENTS_FILE_TS_AGO=$(( CURRENT_TS - EVENTS_FILE_TS ))
      if [[ ${EVENTS_FILE_TS_AGO} -le ${IMAGE_RETAIN_PERIOD} ]]; then
        echo "    Finding images from event file $ii and writing names to ${RETAINED_IMAGES_FILE}.names"
-       cat ${ii} | jq -r 'if .Type == "image" then .id elif .Type == "container" then .Actor["Attributes"]["imageID"] + "\n" + .Actor["Attributes"]["image"] else ""  end' \
+       cat ${ii} | jq -r 'if .Type == "image" then .Actor.ID elif .Type == "container" then .Actor["Attributes"]["imageID"] + "\n" + .Actor["Attributes"]["image"] else ""  end' \
        | sort -u >> ${RETAINED_IMAGES_FILE}.names
      fi
   done
