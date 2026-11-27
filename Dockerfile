@@ -25,7 +25,7 @@ FROM octopusdeploy/dhi-node-exporter:1.13.1-alpine3.24@sha256:7f7dc3854a9fd6b908
 
 
 # DHI source: https://hub.docker.com/repository/docker/octopusdeploy/dhi-docker-dind
-FROM octopusdeploy/dhi-docker-dind:29.10.0-alpine_cf-classic-dind@sha256:bdb7474d9f33409d20b56c926237b370625f40a26d3f4793140d241c608a3d14 AS prod
+FROM octopusdeploy/dhi-docker-dind:29.10.1-alpine_cf-classic-dind@sha256:bdb7474d9f33409d20b56c926237b370625f40a26d3f4793140d241c608a3d14 AS prod
 # DHI images declare no volumes. Without one the data root sits on the container's overlay filesystem, where overlay2 cannot be mounted.
 VOLUME /var/lib/docker
 # The DHI image ships dind's modprobe wrapper at /usr/bin/modprobe, so the wrapper's final
